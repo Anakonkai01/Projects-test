@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+
+  gateway:
+    build: ./gateway
+    env_file: .env
+    ports: ["8000:8000"]
+    depends_on: [users, products, orders]
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT}
+      USERS_TARGET: http://users:${USERS_PORT}
+      PRODUCTS_TARGET: http://products:${PRODUCTS_PORT}
+      ORDERS_TARGET: http://orders:${ORDERS_PORT}
+
+  users:
+    build: ./services/users
+    env_file: .env
+    environment:
+      PORT: ${USERS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: ${USERS_MONGO_URI}
+
+  products:
+    build: ./services/products
+    env_file: .env
+    environment:
+      PORT: ${PRODUCTS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: ${PRODUCTS_MONGO_URI}
+
+
+  orders:
+    build: ./services/orders
+    env_file: .env
+    environment:
+      PORT: ${ORDERS_PORT}
+      JWT_SECRET: ${JWT_SECRET}
+      MONGO_URI: ${ORDERS_MONGO_URI}
+      PRODUCTS_URL: ${PRODUCTS_URL}
+    depends_on: [products]
+
+

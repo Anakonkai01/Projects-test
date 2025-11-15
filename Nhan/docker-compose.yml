@@ -1,0 +1,97 @@
+# E_com/docker-compose.yml (Sửa đường dẫn tương đối)
+version: "3.9"
+
+services:
+  gateway:
+    build: ./microshop-microservices/gateway
+    env_file:
+      # Sử dụng .env ở thư mục gốc nếu có biến chung,
+      # hoặc .env riêng của gateway nếu cần
+      - ./microshop-microservices/.env
+    ports:
+      - "${GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      - users
+      - products
+      - orders
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT:-8000}
+      USERS_TARGET: http://users:${USERS_PORT:-8001}
+      PRODUCTS_TARGET: http://products:${PRODUCTS_PORT:-8002}
+      ORDERS_TARGET: http://orders:${ORDERS_PORT:-8003}
+    networks:
+      - microshop_network
+
+  users:
+    build: ./microshop-microservices/services/users
+    env_file:
+      - ./microshop-microservices/services/users/.env # Đường dẫn tương đối
+    # Bỏ environment nếu các biến đã có đủ trong env_file
+    # environment:
+    #   PORT: ${USERS_PORT:-8001}
+    volumes:
+      - ./microshop-microservices/services/users:/app # Đường dẫn tương đối
+      - /app/node_modules
+    networks:
+      - microshop_network
+    depends_on:
+      - redis
+
+  products:
+    build: ./microshop-microservices/services/products
+    env_file:
+      - ./microshop-microservices/services/products/.env # Đường dẫn tương đối
+    # environment:
+    #   PORT: ${PRODUCTS_PORT:-8002}
+    volumes:
+      - ./microshop-microservices/services/products:/app # Đường dẫn tương đối
+      - /app/node_modules
+    networks:
+      - microshop_network
+    depends_on:
+      - redis
+
+  orders:
+    build: ./microshop-microservices/services/orders
+    env_file:
+      - ./microshop-microservices/services/orders/.env # Đường dẫn tương đối
+    environment: # Giữ lại các URL nội bộ vì chúng phụ thuộc tên service
+      PORT: ${ORDERS_PORT:-8003}
+      PRODUCTS_URL: http://products:${PRODUCTS_PORT:-8002}
+      USERS_URL: http://users:${USERS_PORT:-8001}
+      # Các biến khác như MONGO_URI, JWT_SECRET, REDIS_URL, VNPAY... sẽ lấy từ env_file
+    volumes:
+      - ./microshop-microservices/services/orders:/app # Đường dẫn tương đối
+      - /app/node_modules
+    depends_on:
+      - products
+      - users
+      - redis
+    networks:
+      - microshop_network
+
+  frontend:
+    build:
+      context: ./frontend # Đường dẫn tương đối
+      dockerfile: Dockerfile
+    env_file:
+      - ./frontend/.env # Đường dẫn tương đối (nếu có)
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    environment:
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:8000/api}
+    depends_on:
+      - gateway
+    networks:
+      - microshop_network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - microshop_network
+
+networks:
+  microshop_network:
+    driver: bridge

@@ -1,0 +1,19 @@
+{
+  "name": "microshop",
+  "private": true,
+  "workspaces": [
+    "gateway",
+    "services/users",
+    "services/products",
+    "services/orders"
+  ],
+  "scripts": {
+    "start:gateway": "npm --workspace gateway run start",
+    "start:users": "npm --workspace services/users run start",
+    "start:products": "npm --workspace services/products run start",
+    "start:orders": "npm --workspace services/orders run start"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
