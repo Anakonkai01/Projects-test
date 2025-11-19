@@ -206,3 +206,31 @@ exports.deleteProduct = async (req, res) => {
         });
     }
 };
+
+// @desc    Lấy danh sách các thương hiệu (brands) duy nhất
+// @route   GET /products_ser/brands/all
+exports.getAllBrands = async (req, res) => {
+    try {
+        console.log('📦 getAllBrands: Fetching brands from database...');
+        
+        // Lấy tất cả các brand duy nhất, loại bỏ null và empty string, sắp xếp A-Z
+        const brands = await Product.distinct('brand');
+        console.log('📦 getAllBrands: Found', brands.length, 'unique brands');
+        
+        const filteredBrands = brands.filter(brand => brand && brand.trim() !== '').sort();
+        console.log('📦 getAllBrands: Returning', filteredBrands.length, 'filtered brands:', filteredBrands);
+        
+        res.status(200).json({
+            success: true,
+            data: filteredBrands,
+            count: filteredBrands.length
+        });
+    } catch (error) {
+        console.error('❌ Error in getAllBrands:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Server Error',
+            message: error.message 
+        });
+    }
+};

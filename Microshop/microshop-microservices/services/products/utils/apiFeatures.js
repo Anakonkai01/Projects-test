@@ -22,10 +22,34 @@ class APIFeatures {
         const queryCopy = { ...this.queryString };
         
         // Xóa các trường đặc biệt
-        const removeFields = ['keyword', 'page', 'limit', 'sort'];
+        const removeFields = ['keyword', 'page', 'limit', 'sort', 'ram', 'storage'];
         removeFields.forEach(key => delete queryCopy[key]);
 
-        // Xử lý lọc theo khoảng giá (gte, gt, lte, lt)
+        // Xử lý lọc theo RAM (trong specifications.ram)
+        if (this.queryString.ram) {
+            const ramValue = this.queryString.ram;
+            if (ramValue === '16GB') {
+                // 16GB trở lên
+                queryCopy['specifications.ram'] = { $regex: '1[6-9]GB|[2-9][0-9]GB|[0-9]+TB', $options: 'i' };
+            } else {
+                // Match chính xác
+                queryCopy['specifications.ram'] = { $regex: ramValue, $options: 'i' };
+            }
+        }
+
+        // Xử lý lọc theo Storage (trong specifications.storage)
+        if (this.queryString.storage) {
+            const storageValue = this.queryString.storage;
+            if (storageValue === '1TB') {
+                // 1TB trở lên
+                queryCopy['specifications.storage'] = { $regex: '[1-9]+TB', $options: 'i' };
+            } else {
+                // Match chính xác
+                queryCopy['specifications.storage'] = { $regex: storageValue, $options: 'i' };
+            }
+        }
+        
+        // Xử lý lọc theo khoảng giá và ratings (gte, gt, lte, lt)
         let queryStr = JSON.stringify(queryCopy);
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, match => `$${match}`);
         

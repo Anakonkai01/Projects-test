@@ -121,7 +121,7 @@ const Login = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="email"
             >
-              Email
+              Email <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -129,7 +129,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
+              placeholder="your-email@example.com"
               required
             />
           </div>
@@ -138,7 +138,7 @@ const Login = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="password"
             >
-              Password
+              Mật khẩu <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -146,7 +146,8 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your password"
+              placeholder="Nhập mật khẩu của bạn"
+              minLength="8"
               required
             />
           </div>
@@ -195,7 +196,7 @@ const Login = () => {
               className="w-full inline-flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition-colors duration-200"
             >
               <GoogleIcon />
-              Sign in with Google
+              Đăng nhập với Google
             </a>
           </div>
 

@@ -57,6 +57,7 @@ const NavBar = ({ toggleCartDrawer }) => {
     setNavDrawerOpen(false);
   };
 
+  // SỬA: Đếm số lượng item (số loại sản phẩm) thay vì tổng quantity
   const cartItemCount = cartItems.length;
 
   return (

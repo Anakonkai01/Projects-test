@@ -10,28 +10,30 @@ dotenv.config({ path: '../.env' }); // Giả sử file .env ở thư mục gốc
 const app = express();
 const PORT = process.env.GATEWAY_PORT || 9000;
 
-// Các middleware chung nên được khai báo trước các route
-app.use(cors());
-app.use(morgan('tiny'));
-
 // Định nghĩa target từ biến môi trường
 const USERS_TARGET = process.env.USERS_TARGET || 'http://localhost:8001';
 const PRODUCTS_TARGET = process.env.PRODUCTS_TARGET || 'http://localhost:8002';
 const ORDERS_TARGET = process.env.ORDERS_TARGET || 'http://localhost:8003';
 
-// Route kiểm tra sức khỏe của gateway
-app.get('/health', (_, res) => res.json({ ok: true, service: 'gateway' }));
-const onProxyReq = (proxyReq, req, res) => {
-    console.log(`[Gateway] Proxying request from ${req.originalUrl} to ${proxyReq.path}`);
-};
-// --- CÁC QUY TẮC PROXY ---
+// --- CÁC QUY TẮC PROXY (ĐẶT TRƯỚC MIDDLEWARE KHÁC) ---
 
 // Quy tắc cho Products 
 app.use('/api/products', createProxyMiddleware({ 
-    target: PRODUCTS_TARGET, 
-    changeOrigin: true, 
-    pathRewrite: { '^/api/products': '/products_ser' },
+    target: `${PRODUCTS_TARGET}/products_ser`, 
+    changeOrigin: true,
+    onProxyReq: (proxyReq, req, res) => {
+        console.log(`[Products Proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.path}`);
+    }
 }));
+
+// Các middleware chung
+app.use(cors());
+app.use(morgan('tiny'));
+
+// Route kiểm tra sức khỏe của gateway
+app.get('/health', (_, res) => res.json({ ok: true, service: 'gateway' }));
+
+// --- CÁC QUY TẮC PROXY KHÁC ---
 
 // Quy tắc cho Auth
 app.use('/api/auth', createProxyMiddleware({ 

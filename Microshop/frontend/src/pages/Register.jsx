@@ -52,10 +52,25 @@ const Register = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate name length
+    if (name.trim().length < 2) {
+      toast.error("Tên phải có ít nhất 2 ký tự!");
+      return;
+    }
+    
+    // Validate password length
+    if (password.length < 8) {
+      toast.error("Mật khẩu phải có ít nhất 8 ký tự!");
+      return;
+    }
+    
+    // Validate password match
     if (password !== confirmPassword) {
       toast.error("Mật khẩu không khớp!");
       return;
     }
+    
     if (isLoading) return;
 
     const userData = {
@@ -87,7 +102,7 @@ const Register = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="name"
             >
-              Họ và Tên
+              Họ và Tên <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -95,9 +110,13 @@ const Register = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Nhập họ và tên của bạn"
+              placeholder="VD: Nguyễn Văn A"
+              minLength="2"
               required
             />
+            {name && name.trim().length < 2 && (
+              <p className="text-red-500 text-xs mt-1">Tên phải có ít nhất 2 ký tự</p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -105,7 +124,7 @@ const Register = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="email"
             >
-              Email
+              Email <span className="text-red-500">*</span>
             </label>
             <input
               type="email"
@@ -113,7 +132,7 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Nhập email"
+              placeholder="your-email@example.com"
               required
             />
           </div>
@@ -123,7 +142,7 @@ const Register = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="password"
             >
-              Mật khẩu
+              Mật khẩu <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -131,9 +150,13 @@ const Register = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Nhập mật khẩu"
+              placeholder="Ít nhất 8 ký tự"
+              minLength="8"
               required
             />
+            {password && password.length < 8 && (
+              <p className="text-red-500 text-xs mt-1">Mật khẩu phải có ít nhất 8 ký tự</p>
+            )}
           </div>
 
           <div className="mb-4">
@@ -141,7 +164,7 @@ const Register = () => {
               className="block text-gray-700 text-sm font-medium mb-2"
               htmlFor="confirmPassword"
             >
-              Xác nhận mật khẩu
+              Xác nhận mật khẩu <span className="text-red-500">*</span>
             </label>
             <input
               type="password"
@@ -152,6 +175,9 @@ const Register = () => {
               placeholder="Nhập lại mật khẩu"
               required
             />
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">Mật khẩu không khớp</p>
+            )}
           </div>
 
           <div className="flex items-center justify-between mb-4">

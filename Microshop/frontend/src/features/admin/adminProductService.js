@@ -1,7 +1,7 @@
 import api from '../../utils/axios';
 
-const API_URL = '/products/products_ser'; 
-const categories = '/products/categories'
+const API_URL = '/products'; 
+const categories = '/categories'
 // Lấy tất cả sản phẩm
 const getProducts = async (queryParams = '') => {
     const response = await api.get(`${API_URL}${queryParams}`);

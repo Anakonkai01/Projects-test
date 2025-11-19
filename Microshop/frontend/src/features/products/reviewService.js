@@ -1,6 +1,6 @@
 import api from '../../utils/axios';
 
-const API_URL = '/products/products_ser/';
+const API_URL = '/products';
 
 // Tạo hoặc cập nhật review
 const createReview = async (productId, reviewData) => {

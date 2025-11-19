@@ -286,3 +286,51 @@ exports.confirmClientPayment = async (req, res) => {
         res.status(500).json({ success: false, error: 'Lỗi Server' });
     }
 };
+
+// @desc    Hủy đơn hàng (chỉ cho phép khi trạng thái là Pending)
+// @route   PUT /api/orders/:id/cancel
+// @access  Private (User owns the order)
+exports.cancelOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ success: false, error: 'Không tìm thấy đơn hàng' });
+        }
+
+        // Kiểm tra quyền sở hữu - chỉ user tạo đơn mới được hủy
+        if (order.user.toString() !== req.user.id) {
+            return res.status(403).json({ success: false, error: 'Bạn không có quyền hủy đơn hàng này' });
+        }
+
+        // Lấy trạng thái hiện tại
+        const currentStatus = order.orderStatusHistory[order.orderStatusHistory.length - 1].status;
+
+        // Chỉ cho phép hủy khi đơn hàng ở trạng thái Pending
+        if (currentStatus !== 'Pending') {
+            return res.status(400).json({ 
+                success: false, 
+                error: `Không thể hủy đơn hàng ở trạng thái ${currentStatus}. Chỉ có thể hủy đơn hàng ở trạng thái Pending.` 
+            });
+        }
+
+        // Thêm trạng thái Cancelled vào lịch sử
+        order.orderStatusHistory.push({ status: 'Cancelled' });
+        await order.save({ validateBeforeSave: false });
+
+        // Gửi sự kiện hoàn trả tồn kho (nếu Redis đã kết nối)
+        if (publisher.isReady) {
+            const eventPayload = {
+                type: 'ORDER_CANCELLED',
+                payload: { items: order.orderItems },
+            };
+            await publisher.publish('order-events', JSON.stringify(eventPayload));
+            console.log(`Đã gửi sự kiện ORDER_CANCELLED cho đơn hàng ${order._id}`);
+        }
+
+        res.status(200).json({ success: true, data: order });
+    } catch (error) {
+        console.error("Lỗi khi hủy đơn hàng:", error);
+        res.status(500).json({ success: false, error: 'Lỗi Server' });
+    }
+};

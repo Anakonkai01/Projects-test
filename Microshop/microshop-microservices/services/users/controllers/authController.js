@@ -11,20 +11,31 @@ exports.register = async (req, res, next) => {
     try {
         const { name, email, password, role } = req.body;
 
+        // Validate input
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, error: 'Vui lòng cung cấp đủ thông tin' });
+        }
+        
+        // Validate name length
+        if (name.trim().length < 2) {
+            return res.status(400).json({ success: false, error: 'Tên phải có ít nhất 2 ký tự' });
+        }
+        
+        // Validate password length
+        if (password.length < 8) {
+            return res.status(400).json({ success: false, error: 'Mật khẩu phải có ít nhất 8 ký tự' });
         }
         
         // Kiểm tra email tồn tại
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ success: false, error: 'Email đã tồn tại' });
+            return res.status(409).json({ success: false, error: 'Email đã được sử dụng. Vui lòng sử dụng email khác.' });
         }
 
         // Tạo user mới (mật khẩu sẽ được tự động hash bởi pre-save hook trong model)
         const user = await User.create({
-            name,
-            email,
+            name: name.trim(),
+            email: email.toLowerCase().trim(),
             password,
             role
         });
@@ -32,7 +43,15 @@ exports.register = async (req, res, next) => {
         sendTokenResponse(user, 201, res);
 
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Register error:', error);
+        
+        // Xử lý lỗi validation của Mongoose
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ success: false, error: messages.join(', ') });
+        }
+        
+        res.status(500).json({ success: false, error: 'Lỗi server khi đăng ký. Vui lòng thử lại.' });
     }
 };
 
@@ -43,14 +62,16 @@ exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
+        // Validate input
         if (!email || !password) {
-            return res.status(400).json({ success: false, error: 'Vui lòng cung cấp email và mật khẩu' });
+            return res.status(400).json({ success: false, error: 'Vui lòng nhập email và mật khẩu' });
         }
         
-        const user = await User.findOne({ email }).select('+password');
+        // Tìm user và lấy cả password field
+        const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
 
         if (!user) {
-            return res.status(401).json({ success: false, error: 'Email hoặc mật khẩu không hợp lệ' });
+            return res.status(401).json({ success: false, error: 'Email hoặc mật khẩu không đúng' });
         }
         
         // THÊM ĐOẠN KIỂM TRA NÀY
@@ -58,7 +79,7 @@ exports.login = async (req, res, next) => {
         if (!user.password) {
             return res.status(400).json({ 
                 success: false, 
-                error: 'Tài khoản này được đăng ký bằng phương thức khác. Vui lòng đăng nhập bằng Google.' 
+                error: 'Tài khoản này được đăng nhập bằng Google. Vui lòng sử dụng "Quên mật khẩu" để tạo mật khẩu mới hoặc đăng nhập bằng Google.' 
             });
         }
         
@@ -66,13 +87,14 @@ exports.login = async (req, res, next) => {
         const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
-            return res.status(401).json({ success: false, error: 'Email hoặc mật khẩu không hợp lệ' });
+            return res.status(401).json({ success: false, error: 'Email hoặc mật khẩu không đúng' });
         }
         
         sendTokenResponse(user, 200, res);
 
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, error: 'Lỗi server khi đăng nhập. Vui lòng thử lại.' });
     }
 };
 
@@ -91,22 +113,49 @@ exports.getMe = async (req, res, next) => {
 // @route   PUT /api/users/auth/updatedetails
 exports.updateDetails = async (req, res, next) => {
     try {
+        const user = await User.findById(req.user.id);
+        
+        // Kiểm tra nếu là tài khoản Google và cố gắng đổi email
+        if (user.googleId && req.body.email && req.body.email !== user.email) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Tài khoản Google không thể thay đổi email. Email được quản lý bởi Google.' 
+            });
+        }
+        
         const fieldsToUpdate = {
-            name: req.body.name,
-            email: req.body.email
+            name: req.body.name
         };
+        
+        // Chỉ cho phép đổi email nếu không phải tài khoản Google
+        if (!user.googleId && req.body.email) {
+            fieldsToUpdate.email = req.body.email;
+        }
 
-        const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+        const updatedUser = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
             new: true,
             runValidators: true
         });
 
         res.status(200).json({
             success: true,
-            data: user
+            data: updatedUser
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Update details error:', error);
+        
+        // Xử lý lỗi validation của Mongoose
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ success: false, error: messages.join(', ') });
+        }
+        
+        // Xử lý lỗi email trùng (duplicate key)
+        if (error.code === 11000) {
+            return res.status(400).json({ success: false, error: 'Email này đã được sử dụng' });
+        }
+        
+        res.status(500).json({ success: false, error: 'Lỗi server khi cập nhật thông tin' });
     }
 };
 
@@ -116,8 +165,36 @@ exports.updatePassword = async (req, res, next) => {
     try {
         const { currentPassword, newPassword } = req.body;
 
+        // Validate input
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới' 
+            });
+        }
+
+        // Validate new password length
+        if (newPassword.length < 8) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Mật khẩu mới phải có ít nhất 8 ký tự' 
+            });
+        }
+
         // Lấy user từ DB, bao gồm cả trường password
         const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'Không tìm thấy người dùng' });
+        }
+
+        // Kiểm tra nếu user đăng nhập bằng Google (không có password)
+        if (user.googleId && !user.password) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Tài khoản này đăng nhập qua Google, không thể đổi mật khẩu. Vui lòng sử dụng "Quên mật khẩu" để tạo mật khẩu mới.' 
+            });
+        }
 
         // Kiểm tra mật khẩu hiện tại có khớp không
         const isMatch = await user.comparePassword(currentPassword);
@@ -134,7 +211,15 @@ exports.updatePassword = async (req, res, next) => {
         sendTokenResponse(user, 200, res);
 
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Update password error:', error);
+        
+        // Xử lý lỗi validation của Mongoose
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ success: false, error: messages.join(', ') });
+        }
+        
+        res.status(500).json({ success: false, error: 'Lỗi server khi đổi mật khẩu' });
     }
 };
 

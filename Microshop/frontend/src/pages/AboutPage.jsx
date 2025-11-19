@@ -101,7 +101,7 @@ const AboutPage = () => {
             <p className="text-gray-600 mb-4 leading-relaxed">
               Tại Microshop, chúng tôi tin rằng công nghệ là cầu nối mang lại
               tương lai. Sứ mệnh của chúng tôi là mang đến cho khách hàng những
-              sản phẩm điện thoại và laptop tiên tiến nhất, với mức giá cạnh
+              sản phẩm điện thoại tiên tiến nhất, với mức giá cạnh
               tranh và dịch vụ hậu mãi vượt trội.
             </p>
             <p className="text-gray-600 leading-relaxed">

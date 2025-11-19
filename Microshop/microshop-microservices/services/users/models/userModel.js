@@ -12,7 +12,6 @@ const addressSchema = new mongoose.Schema({
     city: { type: String, required: true },
     phoneNo: { type: String, required: true },
     postalCode: { type: String, required: true },
-    country: { type: String, required: true },
     isDefault: { type: Boolean, default: false },
 });
 
@@ -82,7 +81,7 @@ userSchema.pre('save', async function (next) {
 
 // Method: Tạo JWT token
 userSchema.methods.getJWTToken = function () {
-    return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+    return jwt.sign({ id: this._id, role: this.role, name: this.name }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
     });
 };

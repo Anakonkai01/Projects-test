@@ -22,11 +22,18 @@ const getMyOrderDetails = async (orderId) => {
     return response.data.data;
 };
 
+// Hủy đơn hàng
+const cancelOrder = async (orderId) => {
+    const response = await api.put(`${API_URL}${orderId}/cancel`);
+    return response.data.data;
+};
+
 const orderService = {
     createOrder,
     getMyOrders,
     confirmClientPayment,
-    getMyOrderDetails
+    getMyOrderDetails,
+    cancelOrder
 };
 
 export default orderService;

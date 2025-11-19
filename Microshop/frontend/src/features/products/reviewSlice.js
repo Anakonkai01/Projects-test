@@ -20,13 +20,10 @@ export const getProductReviews = createAsyncThunk('reviews/get', async (productI
 export const createProductReview = createAsyncThunk('reviews/create', async ({ productId, reviewData }, thunkAPI) => {
     try {
         const response = await reviewService.createReview(productId, reviewData);
-        toast.success(response.message);
-        // Sau khi tạo thành công, gọi lại action để lấy danh sách review mới nhất
-        thunkAPI.dispatch(getProductReviews(productId)); 
+        // Không tự động reload reviews ở đây nữa, để component xử lý
         return response.data;
     } catch (error) {
         const message = error.response?.data?.error || 'Bạn cần đăng nhập để đánh giá.';
-        toast.error(message);
         return thunkAPI.rejectWithValue(message);
     }
 });

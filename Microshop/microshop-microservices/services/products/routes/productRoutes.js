@@ -4,13 +4,17 @@ const {
     createProduct,
     getProductById,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAllBrands
 } = require('../controllers/productController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
+
+// Route để lấy danh sách brands - phải đặt trước route /:id
+router.get('/brands/all', getAllBrands);
 
 router.route('/')
     .get(getAllProducts)

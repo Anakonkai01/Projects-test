@@ -15,10 +15,10 @@ const HeroBanner = () => (
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-          Chào mừng đến với MobileShope!
+          Chào mừng đến với Microshop!
         </h1>
         <p className="text-lg md:text-xl text-blue-100 mb-8">
-          Khám phá ngay điện thoại & laptop mới nhất với giá ưu đãi.
+          Khám phá ngay điện thoại mới nhất với giá ưu đãi.
         </p>
         <motion.a
           href="/shop"
@@ -37,7 +37,7 @@ const HeroBanner = () => (
       >
         <img
           src="/logo.jpg"
-          alt="Laptops and Phones"
+          alt="Điện thoại"
           className="absolute right-0 top-1/2 transform -translate-y-1/2 max-w-lg rounded-lg"
         />
       </motion.div>
@@ -59,7 +59,7 @@ const sectionVariants = {
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { newProducts, bestSellers, laptops, phones, isLoading } = useSelector(
+  const { newProducts, bestSellers, applePhones, samsungPhones, isLoading } = useSelector(
     (state) => state.products
   );
 
@@ -70,9 +70,9 @@ const Home = () => {
     dispatch(
       fetchProducts({ query: "?sort=-sold&limit=4", type: "bestSellers" })
     );
-    dispatch(fetchProducts({ query: "?brand=Apple&limit=4", type: "laptops" }));
+    dispatch(fetchProducts({ query: "?brand=Apple&limit=4", type: "applePhones" }));
     dispatch(
-      fetchProducts({ query: "?brand=Samsung&limit=4", type: "phones" })
+      fetchProducts({ query: "?brand=Samsung&limit=4", type: "samsungPhones" })
     );
   }, [dispatch]);
 
@@ -114,8 +114,8 @@ const Home = () => {
         >
           <ProductSection
             title="APPLE"
-            products={laptops}
-            isLoading={isLoading && laptops.length === 0}
+            products={applePhones}
+            isLoading={isLoading && applePhones.length === 0}
           />
         </motion.div>
 
@@ -127,8 +127,8 @@ const Home = () => {
         >
           <ProductSection
             title="SAMSUNG"
-            products={phones}
-            isLoading={isLoading && phones.length === 0}
+            products={samsungPhones}
+            isLoading={isLoading && samsungPhones.length === 0}
           />
         </motion.div>
       </div>

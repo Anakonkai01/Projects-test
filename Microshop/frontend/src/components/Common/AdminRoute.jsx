@@ -10,15 +10,15 @@ const AdminRoute = () => {
         return <div>Loading...</div>;
     }
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
-
-    if (user.role === 'ADMIN') {
-        return <Outlet />;
+    if (user && user.role === 'ADMIN') {
+        return <Outlet />; // Cho phép truy cập
     } else {
-        toast.error("Truy cập bị từ chối. Bạn không phải là Admin.");
-        return <Navigate to="/" replace />;
+        // Chỉ hiển thị thông báo lỗi khi user tồn tại nhưng không phải admin
+        // Không hiển thị khi user = null (đã logout)
+        if (user && user.role !== 'ADMIN') {
+            toast.error("Truy cập bị từ chối. Bạn không phải là Admin.");
+        }
+        return <Navigate to="/" replace />; // Chuyển hướng về trang chủ
     }
 };
 

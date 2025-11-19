@@ -50,19 +50,12 @@ const ProductManagement = () => {
           // Giả sử bạn dùng 'brand'
           console.log(`Sản phẩm thuộc brand: ${product.brand}. Đang re-fetch brand đó...`);
           if (product.brand === 'Apple') {
-            dispatch(fetchProducts({ query: "?brand=Apple&limit=4", type: "laptops" }));
+            dispatch(fetchProducts({ query: "?brand=Apple&limit=4", type: "applePhones" }));
           }
           if (product.brand === 'Samsung') {
-            dispatch(fetchProducts({ query: "?brand=Samsung&limit=4", type: "phones" }));
+            dispatch(fetchProducts({ query: "?brand=Samsung&limit=4", type: "samsungPhones" }));
           }
-          // Hoặc nếu bạn dùng 'category' (thay thế hoặc bổ sung)
-          // console.log(`Sản phẩm thuộc category: ${product.category?.name || product.category}. Đang re-fetch category đó...`);
-          // if (product.category === 'ID_CUA_LAPTOP') { // Thay 'ID_CUA_LAPTOP' bằng ID thực tế
-          //   dispatch(fetchProducts({ query: "?category=ID_CUA_LAPTOP&limit=4", type: "laptops" }));
-          // }
-          // if (product.category === 'ID_CUA_PHONE') { // Thay 'ID_CUA_PHONE' bằng ID thực tế
-          //   dispatch(fetchProducts({ query: "?category=ID_CUA_PHONE&limit=4", type: "phones" }));
-          // }
+          // Web chỉ bán điện thoại, không bán laptop
           // Thêm các brand/category khác nếu có...
           // === KẾT THÚC PHẦN THÊM VÀO ===
 

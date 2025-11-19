@@ -7,11 +7,24 @@ exports.createProductReview = async (req, res) => {
     const { rating, comment } = req.body;
     const { productId } = req.params;
 
+    // Validate input
+    if (!rating || !comment) {
+        return res.status(400).json({ success: false, error: 'Vui lòng nhập đầy đủ đánh giá và bình luận' });
+    }
+
+    if (rating < 1 || rating > 5) {
+        return res.status(400).json({ success: false, error: 'Đánh giá phải từ 1 đến 5 sao' });
+    }
+
+    if (comment.trim().length < 10) {
+        return res.status(400).json({ success: false, error: 'Bình luận phải có ít nhất 10 ký tự' });
+    }
+
     const review = {
         user: req.user.id,
-        name: req.user.name, // Giả sử middleware đã lấy được tên user
+        name: req.user.name,
         rating: Number(rating),
-        comment,
+        comment: comment.trim(),
     };
 
     try {
@@ -21,23 +34,10 @@ exports.createProductReview = async (req, res) => {
             return res.status(404).json({ success: false, error: 'Không tìm thấy sản phẩm' });
         }
 
-        const isReviewed = product.reviews.find(
-            (r) => r.user.toString() === req.user.id.toString()
-        );
-
-        if (isReviewed) {
-            // Nếu đã review, cập nhật lại
-            product.reviews.forEach((rev) => {
-                if (rev.user.toString() === req.user.id.toString()) {
-                    rev.comment = comment;
-                    rev.rating = rating;
-                }
-            });
-        } else {
-            // Nếu chưa, thêm review mới
-            product.reviews.push(review);
-            product.numOfReviews = product.reviews.length;
-        }
+        // Luôn thêm review mới, không kiểm tra đã review hay chưa
+        // Người dùng có thể đánh giá nhiều lần
+        product.reviews.push(review);
+        product.numOfReviews = product.reviews.length;
 
         // Tính toán lại điểm trung bình
         product.ratings =
@@ -46,11 +46,18 @@ exports.createProductReview = async (req, res) => {
 
         await product.save({ validateBeforeSave: false });
 
-        res.status(200).json({ success: true, message: "Đánh giá thành công!" });
+        res.status(200).json({ 
+            success: true, 
+            message: "Đánh giá thành công!",
+            data: {
+                ratings: product.ratings,
+                numOfReviews: product.numOfReviews
+            }
+        });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: 'Server Error' });
+        console.error('Review error:', error);
+        res.status(500).json({ success: false, error: 'Lỗi server khi tạo đánh giá' });
     }
 };
 

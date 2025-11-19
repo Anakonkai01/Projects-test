@@ -52,7 +52,6 @@ const Checkout = () => {
     city: "",
     phoneNo: "",
     postalCode: "",
-    country: "",
   });
   const [discountCodeInput, setDiscountCodeInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -129,17 +128,48 @@ const Checkout = () => {
   };
 
   const handleInputChange = (e) => {
-    // ... (giữ nguyên)
-    setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Validate phone number (chỉ cho phép số)
+    if (name === "phoneNo") {
+      const phoneRegex = /^[0-9]*$/;
+      if (!phoneRegex.test(value)) {
+        return;
+      }
+    }
+    
+    // Validate postal code (chỉ cho phép số)
+    if (name === "postalCode") {
+      const postalRegex = /^[0-9]*$/;
+      if (!postalRegex.test(value)) {
+        return;
+      }
+    }
+    
+    setShippingInfo({ ...shippingInfo, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // ... (phần kiểm tra guestEmail giữ nguyên) ...
+    
+    // Validate guest email
     if (!user && !guestEmail.trim()) {
       toast.error("Vui lòng nhập email của bạn để tiếp tục.");
       return;
     }
+    
+    // Validate phone number length
+    if (shippingInfo.phoneNo.length < 10 || shippingInfo.phoneNo.length > 11) {
+      toast.error("Số điện thoại phải có 10-11 chữ số.");
+      return;
+    }
+    
+    // Validate postal code length
+    if (shippingInfo.postalCode.length < 5 || shippingInfo.postalCode.length > 6) {
+      toast.error("Mã bưu chính phải có 5-6 chữ số.");
+      return;
+    }
+    
     const guestName = shippingInfo.address;
 
     // orderData đã đúng vì nó dùng itemsToDisplay
@@ -232,46 +262,84 @@ const Checkout = () => {
                 />
               </div>
             )}
-            <input
-              name="address"
-              value={shippingInfo.address || ""}
-              onChange={handleInputChange}
-              placeholder="Địa chỉ"
-              className="p-2 border rounded w-full"
-              required
-            />
-            <input
-              name="city"
-              value={shippingInfo.city || ""}
-              onChange={handleInputChange}
-              placeholder="Thành phố"
-              className="p-2 border rounded w-full"
-              required
-            />
-            <input
-              name="phoneNo"
-              value={shippingInfo.phoneNo || ""}
-              onChange={handleInputChange}
-              placeholder="Số điện thoại"
-              className="p-2 border rounded w-full"
-              required
-            />
-            <input
-              name="postalCode"
-              value={shippingInfo.postalCode || ""}
-              onChange={handleInputChange}
-              placeholder="Mã bưu chính"
-              className="p-2 border rounded w-full"
-              required
-            />
-            <input
-              name="country"
-              value={shippingInfo.country || ""}
-              onChange={handleInputChange}
-              placeholder="Quốc gia"
-              className="p-2 border rounded w-full"
-              required
-            />
+            
+            <div>
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Địa chỉ <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                value={shippingInfo.address || ""}
+                onChange={handleInputChange}
+                placeholder="VD: 123 Đường ABC, Phường XYZ, Quận 1"
+                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Thành phố <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="city"
+                name="city"
+                type="text"
+                value={shippingInfo.city || ""}
+                onChange={handleInputChange}
+                placeholder="VD: Hồ Chí Minh"
+                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="phoneNo"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Số điện thoại <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="phoneNo"
+                name="phoneNo"
+                type="tel"
+                value={shippingInfo.phoneNo || ""}
+                onChange={handleInputChange}
+                placeholder="VD: 0901234567 (10-11 chữ số)"
+                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                maxLength="11"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="postalCode"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Mã bưu chính <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="postalCode"
+                name="postalCode"
+                type="text"
+                value={shippingInfo.postalCode || ""}
+                onChange={handleInputChange}
+                placeholder="VD: 70000 (5-6 chữ số)"
+                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                maxLength="6"
+                required
+              />
+            </div>
 
             <h2 className="text-xl font-semibold mb-4 pt-4 border-t">
               2. Phương thức thanh toán

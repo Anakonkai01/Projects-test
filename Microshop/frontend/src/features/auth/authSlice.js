@@ -12,10 +12,29 @@ const initialState = {
     message: ''
 };
 
+// Register user
+export const register = createAsyncThunk(
+    'auth/register',
+    async (user, thunkAPI) => {
+        try {
+            return await authService.register(user);
+        } catch (error) {
+            const message =
+                (error.response &&
+                    error.response.data &&
+                    (error.response.data.error || error.response.data.message)) ||
+                error.message ||
+                error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+// Login user
 export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
     try {
         // 1. Đăng nhập để lấy thông tin user
-        const userData = await authService.login(user);
+        const userData = await authService.login(user); 
 
         // 2. Ngay sau khi đăng nhập, gọi action để lấy giỏ hàng
         // Chỉ gọi nếu đăng nhập thành công
@@ -27,14 +46,12 @@ export const login = createAsyncThunk('auth/login', async (user, thunkAPI) => {
         return userData;
     } catch (error) {
         const message =
-            (error.response && error.response.data && error.response.data.message) ||
+            (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
             error.message ||
             error.toString();
         return thunkAPI.rejectWithValue(message);
     }
-});
-
-export const logout = createAsyncThunk('auth/logout', async () => {
+});export const logout = createAsyncThunk('auth/logout', async () => {
     await authService.logout();
 });
 
@@ -70,7 +87,7 @@ export const updatePassword = createAsyncThunk('auth/updatePassword', async (pas
         return await authService.updatePassword(passwordData);
     } catch (error) {
         const message =
-            (error.response && error.response.data && error.response.data.message) ||
+            (error.response && error.response.data && (error.response.data.error || error.response.data.message)) ||
             error.message ||
             error.toString();
         return thunkAPI.rejectWithValue(message);
@@ -108,38 +125,38 @@ export const resetPassword = createAsyncThunk(
 );
 export const addAddress = createAsyncThunk('auth/addAddress', async (addressData, thunkAPI) => {
     try {
-        return await authService.addAddress(addressData);
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message) ||
-            error.message ||
-            error.toString();
-        return thunkAPI.rejectWithValue(message);
-    }
+            return await authService.addAddress(addressData);
+        } catch (error) {
+            const message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
 });
 export const updateAddress = createAsyncThunk('auth/updateAddress', async (data, thunkAPI) => {
     try {
-        return await authService.updateAddress(data);
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message) ||
-            error.message ||
-            error.toString();
-        return thunkAPI.rejectWithValue(message);
-    }
-
+            return await authService.updateAddress(data);
+        } catch (error) {
+            const message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    
 });
 export const deleteAddress = createAsyncThunk('auth/deleteAddress', async (addressId, thunkAPI) => {
     try {
-        return await authService.deleteAddress(addressId);
-    } catch (error) {
-        const message =
-            (error.response && error.response.data && error.response.data.message) ||
-            error.message ||
-            error.toString();
-        return thunkAPI.rejectWithValue(message);
-    }
-
+            return await authService.deleteAddress(addressId);
+        } catch (error) {
+            const message =
+                (error.response && error.response.data && error.response.data.message) ||
+                error.message ||
+                error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    
 });
 
 export const authSlice = createSlice({
@@ -213,7 +230,7 @@ export const authSlice = createSlice({
             .addCase(resetPassword.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.user = action.payload;
+                state.user = action.payload; 
             })
             .addCase(addAddress.pending, (state) => {
                 state.isLoading = true;

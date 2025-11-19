@@ -74,14 +74,6 @@ const Footer = () => {
             </li>
             <li>
               <Link
-                to="/shop?category=68e633d4a454864a0c48b6a3"
-                className="hover:text-blue-600 transition-colors"
-              >
-                Laptop
-              </Link>
-            </li>
-            <li>
-              <Link
                 to="/shop?sort=-createdAt"
                 className="hover:text-blue-600 transition-colors"
               >

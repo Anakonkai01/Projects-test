@@ -62,6 +62,19 @@ export const confirmOrderPayment = createAsyncThunk(
     }
 );
 
+// Hủy đơn hàng
+export const cancelOrder = createAsyncThunk(
+    'orders/cancel',
+    async (orderId, thunkAPI) => {
+        try {
+            return await orderService.cancelOrder(orderId);
+        } catch (error) {
+            const message = (error.response?.data?.message) || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const orderSlice = createSlice({
     name: 'order',
     initialState,
@@ -115,6 +128,19 @@ export const orderSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload;
                 state.order = null;
+            })
+            .addCase(cancelOrder.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(cancelOrder.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.order = action.payload; // Cập nhật order với trạng thái đã hủy
+            })
+            .addCase(cancelOrder.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
             });
     },
 });

@@ -140,11 +140,7 @@ const ProductForm = () => {
     };
 
     const removeImage = (indexToRemove) => {
-        const totalImages = existingImages.length + newImageFiles.length;
-        if (totalImages <= 3) {
-            toast.error('Sản phẩm phải có ít nhất 3 hình ảnh.');
-            return;
-        }
+        // Cho phép xóa tự do, không kiểm tra số lượng tối thiểu ở đây
         setImagePreviews(prev => prev.filter((_, i) => i !== indexToRemove));
         if (indexToRemove < existingImages.length) {
             setExistingImages(prev => prev.filter((_, i) => i !== indexToRemove));
@@ -156,8 +152,11 @@ const ProductForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (existingImages.length + newImageFiles.length < 3) {
-            toast.error('Sản phẩm phải có ít nhất 3 hình ảnh.');
+        
+        // Kiểm tra ít nhất 1 ảnh khi submit
+        const totalImages = existingImages.length + newImageFiles.length;
+        if (totalImages < 1) {
+            toast.error('Vui lòng thêm ít nhất 1 hình ảnh cho sản phẩm!');
             return;
         }
         const productFormData = new FormData();
@@ -227,6 +226,17 @@ const ProductForm = () => {
                     {/* === SỬA FIELDSET BIẾN THỂ === */}
                     <fieldset className="border p-4 rounded-md">
                         <legend className="text-lg font-semibold px-2">Biến thể sản phẩm</legend>
+                        
+                        {/* Header cho bảng biến thể */}
+                        <div className="hidden md:grid md:grid-cols-12 gap-4 pb-2 mb-2 border-b-2 border-gray-300 font-semibold text-sm text-gray-700">
+                            <div className="col-span-3">Tên biến thể</div>
+                            <div className="col-span-2">Mã SKU</div>
+                            <div className="col-span-2">Số lượng</div>
+                            <div className="col-span-2">Giá (VNĐ)</div>
+                            <div className="col-span-2">Hình ảnh</div>
+                            <div className="col-span-1"></div>
+                        </div>
+                        
                         <div className="space-y-4">
                             {formData.variants.map((variant, index) => (
                                 // SỬA: Đổi grid-cols-10 thành grid-cols-12
@@ -271,7 +281,7 @@ const ProductForm = () => {
                     {/* ... (Fieldset Hình ảnh, Thông số, Nút bấm giữ nguyên) ... */}
                     <fieldset className="border p-4 rounded-md">
                         <legend className="text-lg font-semibold px-2">Hình ảnh</legend>
-                        <p className="text-sm text-gray-500 mb-4">Cần ít nhất 3 ảnh.</p>
+                        <p className="text-sm text-gray-500 mb-4">Cần ít nhất 1 ảnh. {imagePreviews.length > 0 ? `Hiện có ${imagePreviews.length} ảnh.` : 'Chưa có ảnh nào.'}</p>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-4">
                             {imagePreviews.map((previewUrl, index) => (
                                 <div key={index} className="relative w-full h-24 border rounded-md shadow-sm">
@@ -296,12 +306,30 @@ const ProductForm = () => {
                     <fieldset className="border p-4 rounded-md">
                         <legend className="text-lg font-semibold px-2">Thông số kỹ thuật</legend>
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <input type="text" name="display" placeholder="Màn hình" value={formData.specifications.display} onChange={handleSpecificationChange} className="input-style" />
-                            <input type="text" name="processor" placeholder="Vi xử lý (CPU)" value={formData.specifications.processor} onChange={handleSpecificationChange} className="input-style" />
-                            <input type="text" name="ram" placeholder="RAM" value={formData.specifications.ram} onChange={handleSpecificationChange} className="input-style" />
-                            <input type="text" name="storage" placeholder="Bộ nhớ trong" value={formData.specifications.storage} onChange={handleSpecificationChange} className="input-style" />
-                            <input type="text" name="graphics" placeholder="Card đồ họa" value={formData.specifications.graphics} onChange={handleSpecificationChange} className="input-style" />
-                            <input type="text" name="battery" placeholder="Pin" value={formData.specifications.battery} onChange={handleSpecificationChange} className="input-style" />
+                            <div>
+                                <label htmlFor="display" className="block text-sm font-medium text-gray-700">Màn hình</label>
+                                <input type="text" name="display" id="display" placeholder="VD: 15.6 inch Full HD" value={formData.specifications.display} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
+                            <div>
+                                <label htmlFor="processor" className="block text-sm font-medium text-gray-700">Vi xử lý (CPU)</label>
+                                <input type="text" name="processor" id="processor" placeholder="VD: Intel Core i5-1135G7" value={formData.specifications.processor} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
+                            <div>
+                                <label htmlFor="ram" className="block text-sm font-medium text-gray-700">RAM</label>
+                                <input type="text" name="ram" id="ram" placeholder="VD: 8GB DDR4" value={formData.specifications.ram} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
+                            <div>
+                                <label htmlFor="storage" className="block text-sm font-medium text-gray-700">Bộ nhớ trong</label>
+                                <input type="text" name="storage" id="storage" placeholder="VD: 512GB SSD NVMe" value={formData.specifications.storage} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
+                            <div>
+                                <label htmlFor="graphics" className="block text-sm font-medium text-gray-700">Card đồ họa</label>
+                                <input type="text" name="graphics" id="graphics" placeholder="VD: NVIDIA GeForce GTX 1650" value={formData.specifications.graphics} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
+                            <div>
+                                <label htmlFor="battery" className="block text-sm font-medium text-gray-700">Pin</label>
+                                <input type="text" name="battery" id="battery" placeholder="VD: 56Wh" value={formData.specifications.battery} onChange={handleSpecificationChange} className="mt-1 block w-full input-style" />
+                            </div>
                         </div>
                     </fieldset>
 

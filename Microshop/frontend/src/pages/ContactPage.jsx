@@ -1,69 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import {
   FiMapPin,
   FiPhone,
   FiMail,
-  FiSend,
-  FiLoader,
+  FiClock,
 } from "react-icons/fi";
-import { toast } from "sonner";
-
-// Component con cho Input
-const FormInput = ({
-  id,
-  label,
-  type = "text",
-  value,
-  onChange,
-  placeholder,
-  required = true,
-}) => (
-  <div>
-    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
-      {label}
-    </label>
-    <input
-      type={type}
-      id={id}
-      name={id}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      required={required}
-      className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-    />
-  </div>
-);
+import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 
 // Trang Liên Hệ
 const ContactPage = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Giả lập API call
-    console.log("Form data:", formData);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Đã gửi tin nhắn! Chúng tôi sẽ liên hệ lại với bạn sớm.");
-      setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 1500);
-  };
-
   return (
     <motion.div
       className="bg-white"
@@ -72,59 +18,139 @@ const ContactPage = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <section className="bg-gray-50 py-20 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-          Liên Hệ
+      <section className="bg-gradient-to-r from-blue-500 to-indigo-600 py-20 text-center text-white">
+        <h1 className="text-4xl md:text-5xl font-bold">
+          Liên Hệ Với Chúng Tôi
         </h1>
-        <p className="text-lg text-gray-600 mt-2">
-          Chúng tôi luôn sẵn sàng lắng nghe bạn.
+        <p className="text-lg mt-4 text-blue-100">
+          Chúng tôi luôn sẵn sàng hỗ trợ và tư vấn cho bạn.
         </p>
       </section>
 
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid md:grid-cols-2 gap-12">
-          {/* Cột Thông tin */}
+          {/* Cột Thông tin liên hệ */}
           <motion.div
-            className="space-y-6"
+            className="space-y-8"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Thông tin liên hệ
-            </h2>
-            <p className="text-gray-600">
-              Bạn có thắc mắc? Hãy điền vào form bên cạnh hoặc liên hệ trực tiếp
-              với chúng tôi qua các kênh dưới đây.
-            </p>
-            <ul className="space-y-4 text-gray-700">
-              <li className="flex items-start">
-                <FiMapPin className="w-5 h-5 mr-3 mt-1 text-blue-600 flex-shrink-0" />
-                <span>
-                  123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh
-                </span>
-              </li>
-              <li className="flex items-center">
-                <FiPhone className="w-5 h-5 mr-3 text-blue-600" />
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                Thông Tin Liên Hệ
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Hãy liên hệ với chúng tôi qua các kênh dưới đây để được tư vấn và hỗ trợ 
+                về sản phẩm, dịch vụ, hoặc bất kỳ thắc mắc nào.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Địa chỉ */}
+              <div className="flex items-start bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                  <FiMapPin className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Địa chỉ</h3>
+                  <p className="text-gray-600">
+                    123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh
+                  </p>
+                </div>
+              </div>
+
+              {/* Số điện thoại */}
+              <div className="flex items-start bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                  <FiPhone className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Điện thoại</h3>
+                  <a
+                    href="tel:0123456789"
+                    className="text-blue-600 hover:underline"
+                  >
+                    (+84) 123 456 789
+                  </a>
+                  <p className="text-sm text-gray-500 mt-1">Hotline hỗ trợ 24/7</p>
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="flex items-start bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                  <FiMail className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
+                  <a
+                    href="mailto:support@microshop.com"
+                    className="text-blue-600 hover:underline"
+                  >
+                    support@microshop.com
+                  </a>
+                  <p className="text-sm text-gray-500 mt-1">Phản hồi trong 24h</p>
+                </div>
+              </div>
+
+              {/* Giờ làm việc */}
+              <div className="flex items-start bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-blue-100 p-3 rounded-full mr-4">
+                  <FiClock className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-1">Giờ làm việc</h3>
+                  <p className="text-gray-600">Thứ 2 - Thứ 7: 8:00 - 20:00</p>
+                  <p className="text-gray-600">Chủ nhật: 9:00 - 18:00</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Media */}
+            <div>
+              <h3 className="font-semibold text-gray-800 mb-4">Kết nối với chúng tôi</h3>
+              <div className="flex gap-4">
                 <a
-                  href="tel:0123456789"
-                  className="hover:text-blue-600 transition-colors"
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-colors"
+                  title="Facebook"
                 >
-                  (+84) 123 456 789
+                  <FaFacebook className="w-6 h-6" />
                 </a>
-              </li>
-              <li className="flex items-center">
-                <FiMail className="w-5 h-5 mr-3 text-blue-600" />
                 <a
-                  href="mailto:support@microshop.com"
-                  className="hover:text-blue-600 transition-colors"
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-full hover:from-purple-600 hover:to-pink-600 transition-colors"
+                  title="Instagram"
                 >
-                  support@microshop.com
+                  <FaInstagram className="w-6 h-6" />
                 </a>
-              </li>
-            </ul>
-            <div className="h-64 md:h-80 w-full rounded-lg overflow-hidden shadow-md border">
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-400 text-white p-3 rounded-full hover:bg-blue-500 transition-colors"
+                  title="Twitter"
+                >
+                  <FaTwitter className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Cột Bản đồ */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="h-full min-h-[500px] w-full rounded-lg overflow-hidden shadow-lg border border-gray-200">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.447177810313!2d106.697364!3d10.776993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f3a39352e1f%3A0x44268036f86c2957!2zQ2jhu6MgQuG6v24gVGjDoG5o!5e0!3m2!1svi!2s!4v1678888888888!5m2!1svi!2s"
                 width="100%"
@@ -133,79 +159,64 @@ const ContactPage = () => {
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Bản đồ"
+                title="Bản đồ Microshop"
               ></iframe>
             </div>
           </motion.div>
+        </div>
+      </section>
 
-          {/* Cột Form */}
-          <motion.div
-            className="bg-gray-50 p-8 rounded-lg shadow-lg border border-gray-200"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
-          >
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-              Gửi tin nhắn cho chúng tôi
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <FormInput
-                id="name"
-                label="Họ và Tên"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Nguyễn Văn A"
-              />
-              <FormInput
-                id="email"
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="bancoten@email.com"
-              />
-              <FormInput
-                id="subject"
-                label="Chủ đề"
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="Hỗ trợ, Báo giá,..."
-              />
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Tin nhắn
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows="5"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Nội dung tin nhắn của bạn..."
-                  required
-                  className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
-                />
-              </div>
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <FiLoader className="animate-spin w-5 h-5 mr-2" />
-                  ) : (
-                    <FiSend className="w-5 h-5 mr-2" />
-                  )}
-                  {isLoading ? "Đang gửi..." : "Gửi tin nhắn"}
-                </button>
-              </div>
-            </form>
-          </motion.div>
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+            Câu Hỏi Thường Gặp
+          </h2>
+          <div className="max-w-3xl mx-auto space-y-4">
+            <details className="bg-white p-6 rounded-lg border border-gray-200 cursor-pointer group">
+              <summary className="font-semibold text-gray-800 list-none flex justify-between items-center">
+                <span>Microshop có giao hàng toàn quốc không?</span>
+                <span className="text-blue-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-gray-600 mt-4">
+                Có, chúng tôi giao hàng toàn quốc với nhiều hình thức vận chuyển khác nhau. 
+                Phí vận chuyển sẽ được tính dựa trên địa chỉ và trọng lượng đơn hàng.
+              </p>
+            </details>
+
+            <details className="bg-white p-6 rounded-lg border border-gray-200 cursor-pointer group">
+              <summary className="font-semibold text-gray-800 list-none flex justify-between items-center">
+                <span>Chính sách đổi trả như thế nào?</span>
+                <span className="text-blue-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-gray-600 mt-4">
+                Sản phẩm có thể đổi trả trong vòng 7 ngày nếu còn nguyên tem, hộp và chưa qua sử dụng. 
+                Vui lòng liên hệ hotline để được hỗ trợ.
+              </p>
+            </details>
+
+            <details className="bg-white p-6 rounded-lg border border-gray-200 cursor-pointer group">
+              <summary className="font-semibold text-gray-800 list-none flex justify-between items-center">
+                <span>Sản phẩm có được bảo hành không?</span>
+                <span className="text-blue-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-gray-600 mt-4">
+                Tất cả sản phẩm đều được bảo hành chính hãng từ 6-12 tháng tùy theo từng dòng máy. 
+                Thông tin chi tiết về bảo hành có trong mỗi sản phẩm.
+              </p>
+            </details>
+
+            <details className="bg-white p-6 rounded-lg border border-gray-200 cursor-pointer group">
+              <summary className="font-semibold text-gray-800 list-none flex justify-between items-center">
+                <span>Có thể thanh toán khi nhận hàng không?</span>
+                <span className="text-blue-600 group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <p className="text-gray-600 mt-4">
+                Có, chúng tôi hỗ trợ thanh toán COD (thanh toán khi nhận hàng) cho tất cả đơn hàng 
+                trong khu vực nội thành TP.HCM và các tỉnh thành lớn.
+              </p>
+            </details>
+          </div>
         </div>
       </section>
     </motion.div>

@@ -5,8 +5,8 @@ const initialState = {
     products: [],       // Dùng cho trang danh sách sản phẩm chung
     newProducts: [],
     bestSellers: [],
-    laptops: [],
-    phones: [],
+    applePhones: [],    // Apple phones thay vì laptops
+    samsungPhones: [],  // Samsung phones thay vì phones
     product: null,      // Sửa thành null, vì chỉ lưu 1 sản phẩm chi tiết
     isLoading: false,
     isError: false,

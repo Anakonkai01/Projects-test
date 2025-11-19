@@ -6,7 +6,8 @@ const {
     getOrderById,    
     updateOrderStatus,
     confirmClientPayment,
-    getMyOrderById
+    getMyOrderById,
+    cancelOrder
 } = require('../controllers/orderController');
 const router = express.Router();
 
@@ -17,6 +18,8 @@ router.route('/me').get(protect, getMyOrders);
 router.route('/').post(optionalProtect, createOrder);
 router.route('/:id/confirm-payment').put(protect, confirmClientPayment);
 router.route('/me/:id').get(protect, getMyOrderById);
+router.route('/:id/cancel').put(protect, cancelOrder);
+
 // === ADMIN ROUTES ===
 router.route('/').get(protect, authorize('ADMIN'), getAllOrders);
 router.route('/:id').get(protect, getOrderById);

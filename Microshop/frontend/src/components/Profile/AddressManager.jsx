@@ -9,17 +9,34 @@ const AddressManager = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingAddress, setEditingAddress] = useState(null);
     const [formData, setFormData] = useState({
-        address: '', city: '', phoneNo: '', postalCode: '', country: '', isDefault: false
+        address: '', city: '', phoneNo: '', postalCode: '', isDefault: false
     });
 
     const handleInputChange = e => {
         const { name, value, type, checked } = e.target;
+        
+        // Validate phone number (chỉ cho phép số)
+        if (name === "phoneNo") {
+            const phoneRegex = /^[0-9]*$/;
+            if (!phoneRegex.test(value)) {
+                return;
+            }
+        }
+        
+        // Validate postal code (chỉ cho phép số)
+        if (name === "postalCode") {
+            const postalRegex = /^[0-9]*$/;
+            if (!postalRegex.test(value)) {
+                return;
+            }
+        }
+        
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
 
     const handleAddNew = () => {
         setEditingAddress(null);
-        setFormData({ address: '', city: '', phoneNo: '', postalCode: '', country: '', isDefault: false });
+        setFormData({ address: '', city: '', phoneNo: '', postalCode: '', isDefault: false });
         setIsFormOpen(true);
     };
 
@@ -37,6 +54,19 @@ const AddressManager = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Validate phone number length
+        if (formData.phoneNo.length < 10 || formData.phoneNo.length > 11) {
+            toast.error("Số điện thoại phải có 10-11 chữ số.");
+            return;
+        }
+        
+        // Validate postal code length
+        if (formData.postalCode.length < 5 || formData.postalCode.length > 6) {
+            toast.error("Mã bưu chính phải có 5-6 chữ số.");
+            return;
+        }
+        
         const action = editingAddress
             ? updateAddress({ addressId: editingAddress._id, addressData: formData })
             : addAddress(formData);
@@ -45,9 +75,12 @@ const AddressManager = () => {
             .then(() => {
                 toast.success(editingAddress ? 'Cập nhật thành công!' : 'Thêm địa chỉ thành công!');
                 setIsFormOpen(false);
-                dispatch(reset());
+                setFormData({ address: '', city: '', phoneNo: '', postalCode: '', isDefault: false });
             })
-            .catch(err => toast.error('Đã có lỗi xảy ra.'));
+            .catch(err => {
+                console.error('Address error:', err);
+                toast.error(err || 'Đã có lỗi xảy ra.');
+            });
     };
 
     return (
@@ -59,13 +92,68 @@ const AddressManager = () => {
 
             {isFormOpen && (
                 <form onSubmit={handleSubmit} className="mb-6 p-4 border rounded-lg">
-                    {/* Input fields for address, city, etc. */}
+                    <h4 className="text-lg font-semibold mb-4">{editingAddress ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input name="address" value={formData.address} onChange={handleInputChange} placeholder="Địa chỉ" className="p-2 border rounded" required />
-                        <input name="city" value={formData.city} onChange={handleInputChange} placeholder="Thành phố" className="p-2 border rounded" required />
-                        <input name="phoneNo" value={formData.phoneNo} onChange={handleInputChange} placeholder="Số điện thoại" className="p-2 border rounded" required />
-                        <input name="postalCode" value={formData.postalCode} onChange={handleInputChange} placeholder="Mã bưu chính" className="p-2 border rounded" required />
-                        <input name="country" value={formData.country} onChange={handleInputChange} placeholder="Quốc gia" className="p-2 border rounded" required />
+                        <div>
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                                Địa chỉ <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="address"
+                                name="address" 
+                                value={formData.address} 
+                                onChange={handleInputChange} 
+                                placeholder="VD: 123 Đường ABC, Phường XYZ" 
+                                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                required 
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                                Thành phố <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="city"
+                                name="city" 
+                                value={formData.city} 
+                                onChange={handleInputChange} 
+                                placeholder="VD: Hồ Chí Minh" 
+                                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                required 
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="phoneNo" className="block text-sm font-medium text-gray-700 mb-1">
+                                Số điện thoại <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="phoneNo"
+                                name="phoneNo" 
+                                type="tel"
+                                value={formData.phoneNo} 
+                                onChange={handleInputChange} 
+                                placeholder="VD: 0901234567 (10-11 số)" 
+                                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                maxLength="11"
+                                required 
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                                Mã bưu chính <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                                id="postalCode"
+                                name="postalCode" 
+                                type="text"
+                                value={formData.postalCode} 
+                                onChange={handleInputChange} 
+                                placeholder="VD: 70000 (5-6 số)" 
+                                className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                maxLength="6"
+                                required 
+                            />
+                        </div>
                     </div>
                     <div className="mt-4">
                         <label className="flex items-center">
@@ -85,7 +173,7 @@ const AddressManager = () => {
                     <div key={addr._id} className="p-4 border rounded-lg flex justify-between items-start">
                         <div>
                             <p className="font-bold">{addr.address} {addr.isDefault && <span className="text-xs bg-green-200 text-green-800 p-1 rounded-full ml-2">Mặc định</span>}</p>
-                            <p>{`${addr.city}, ${addr.country}, ${addr.postalCode}`}</p>
+                            <p>{`${addr.city}, ${addr.postalCode}`}</p>
                             <p>SĐT: {addr.phoneNo}</p>
                         </div>
                         <div className="flex space-x-2">
