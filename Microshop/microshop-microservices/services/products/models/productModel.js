@@ -41,11 +41,6 @@ const productSchema = new mongoose.Schema({
             url: { type: String, required: true },
         }],
     },
-    category: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Category',
-        required: [true, 'Vui lòng chọn danh mục sản phẩm'],
-    },
     brand: {
         type: String,
         required: [true, 'Vui lòng nhập thương hiệu sản phẩm'],

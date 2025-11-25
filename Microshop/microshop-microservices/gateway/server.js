@@ -49,15 +49,6 @@ app.use('/api/users', createProxyMiddleware({
     pathRewrite: { '^/api/users': '/users' } 
 }));
 
-// Quy tắc cho Categories
-app.use('/api/categories', createProxyMiddleware({
-    target: PRODUCTS_TARGET,
-    changeOrigin: true, 
-    pathRewrite: {
-        '^/api/categories': '/categories',
-    },
-}));
-
 // Quy tắc cho Orders
 app.use('/api/orders', createProxyMiddleware({
     target: ORDERS_TARGET,

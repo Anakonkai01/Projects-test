@@ -70,19 +70,33 @@ exports.getProductById = asyncHandler(async (req, res) => {
 // @route   POST /api/v1/products
 exports.createProduct = async (req, res) => {
     try {
+        console.log('===== CREATE PRODUCT DEBUG =====');
+        console.log('req.body:', req.body);
+        console.log('req.files:', req.files);
+        console.log('req.user:', req.user);
+        
         // 1. Xử lý các trường JSON được gửi dưới dạng string
         const variants = JSON.parse(req.body.variants);
         const specifications = JSON.parse(req.body.specifications);
 
         // 2. Xử lý file ảnh đã được upload lên Cloudinary bởi middleware
-        if (!req.files || req.files.length < 3) {
-            return res.status(400).json({ success: false, error: 'Sản phẩm phải có ít nhất 3 hình ảnh.' });
-        }
+        let images = [];
         
-        const images = req.files.map(file => ({
-            public_id: file.filename, // Multer-storage-cloudinary trả về public_id trong 'filename'
-            url: file.path          // và url trong 'path'
-        }));
+        if (req.files && req.files.length > 0) {
+            // Có upload ảnh qua Cloudinary
+            images = req.files.map(file => ({
+                public_id: file.filename,
+                url: file.path
+            }));
+        } else {
+            // Không có ảnh hoặc Cloudinary lỗi - dùng placeholder
+            console.log('⚠️  No images uploaded, using placeholders');
+            images = [
+                { public_id: 'placeholder1', url: 'https://via.placeholder.com/500x500?text=Product+Image+1' },
+                { public_id: 'placeholder2', url: 'https://via.placeholder.com/500x500?text=Product+Image+2' },
+                { public_id: 'placeholder3', url: 'https://via.placeholder.com/500x500?text=Product+Image+3' }
+            ];
+        }
 
         // 3. Tạo product
         const productData = {
@@ -92,17 +106,21 @@ exports.createProduct = async (req, res) => {
             images,
             user: req.user.id
         };
+        
+        console.log('productData:', JSON.stringify(productData, null, 2));
 
         const product = await Product.create(productData);
+        console.log('Product created successfully:', product._id);
         res.status(201).json({ success: true, data: product });
 
     } catch (error) {
         console.error("Lỗi khi tạo sản phẩm:", error);
+        console.error("Error stack:", error.stack);
         // Nếu có lỗi, xóa các ảnh đã lỡ upload lên Cloudinary
         if (req.files) {
             req.files.forEach(file => cloudinary.uploader.destroy(file.filename));
         }
-        res.status(400).json({ success: false, error: 'Không thể thêm sản phẩm. ' + error.message });
+        res.status(500).json({ success: false, error: 'Không thể thêm sản phẩm. ' + error.message });
      }
 };
 

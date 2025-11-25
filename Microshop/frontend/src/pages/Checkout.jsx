@@ -88,10 +88,10 @@ const Checkout = () => {
 
   // Quyết định hiển thị item nào
   const itemsToDisplay = useMemo(() => {
-    if (itemsFromCart) return itemsFromCart; // 1. Ưu tiên: Sản phẩm đã chọn từ giỏ hàng
-    if (buyNowItem) return [buyNowItem]; // 2. Ưu tiên: Sản phẩm "Mua ngay"
+    if (buyNowItem) return [buyNowItem]; // 1. ƯU TIÊN CAO NHẤT: Sản phẩm "Mua ngay"
+    if (itemsFromCart) return itemsFromCart; // 2. Ưu tiên: Sản phẩm đã chọn từ giỏ hàng
     return cartItems; // 3. Dự phòng: Toàn bộ giỏ hàng (nếu vào /checkout trực tiếp)
-  }, [itemsFromCart, buyNowItem, cartItems]);
+  }, [buyNowItem, itemsFromCart, cartItems]);
 
   // SỬA: Tự tính toán tổng tiền hàng (trước giảm giá)
   const itemsTotalAmount = useMemo(() => {
@@ -187,9 +187,15 @@ const Checkout = () => {
         id: "",
         status: paymentMethod === "COD" ? "succeeded" : "pending",
       },
-      discountCode: appliedDiscount ? appliedDiscount.code : undefined,
+      itemsPrice: itemsTotalAmount,
+      taxPrice: 0,
+      shippingPrice: 0,
+      discountPrice: discountAmount,
       pointsToRedeem:
         Number(pointsToRedeem) > 0 ? Number(pointsToRedeem) : undefined,
+      pointsDiscountPrice: pointsDiscountAmount,
+      totalPrice: finalTotal,
+      discountCode: appliedDiscount ? appliedDiscount.code : undefined,
       guestEmail: user ? undefined : guestEmail,
       guestName: user ? undefined : guestName,
     };

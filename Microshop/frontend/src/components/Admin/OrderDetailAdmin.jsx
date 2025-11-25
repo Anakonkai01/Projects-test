@@ -85,6 +85,28 @@ const OrderDetailAdmin = () => {
                         </button>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow">
+                        <h3 className="font-semibold mb-2 text-lg">Tổng tiền</h3>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between"><span>Tiền hàng:</span> <span>{formatPrice(order.itemsPrice)}</span></div>
+                            
+                            {order.discountPrice > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Giảm giá mã:</span> 
+                                    <span>- {formatPrice(order.discountPrice)}</span>
+                                </div>
+                            )}
+                            
+                            {order.pointsDiscountPrice > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Giảm từ điểm ({order.redeemedPoints} điểm):</span> 
+                                    <span>- {formatPrice(order.pointsDiscountPrice)}</span>
+                                </div>
+                            )}
+                            
+                            <div className="flex justify-between font-bold border-t pt-2 mt-2"><span>Tổng cộng:</span> <span className="text-red-600">{formatPrice(order.totalPrice)}</span></div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow">
                         <h3 className="font-semibold mb-2 text-lg">Thông tin người mua</h3>
                         <p><strong>Tên:</strong> {order.user?.name}</p>
                         <p><strong>Email:</strong> {order.user?.email}</p>

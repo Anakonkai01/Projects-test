@@ -66,7 +66,7 @@ const Footer = () => {
           <ul className="space-y-3 text-sm">
             <li>
               <Link
-                to="/shop?category=68e633d4a454864a0c48b6a2"
+                to="/shop"
                 className="hover:text-blue-600 transition-colors"
               >
                 Điện thoại

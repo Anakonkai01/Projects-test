@@ -1,5 +1,4 @@
 # E_com/docker-compose.yml (Sửa đường dẫn tương đối)
-version: "3.9"
 
 services:
   gateway:

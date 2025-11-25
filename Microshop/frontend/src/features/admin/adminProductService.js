@@ -1,7 +1,7 @@
 import api from '../../utils/axios';
 
 const API_URL = '/products'; 
-const categories = '/categories'
+
 // Lấy tất cả sản phẩm
 const getProducts = async (queryParams = '') => {
     const response = await api.get(`${API_URL}${queryParams}`);
@@ -39,18 +39,12 @@ const deleteProduct = async (productId) => {
     return productId;
 };
 
-const getCategories = async () => {
-    const response = await api.get(categories);
-    return response.data.data;
-};
-
 const adminProductService = {
     getProducts,
     getProductById,
     createProduct, 
     updateProduct, 
     deleteProduct,
-    getCategories,
 };
 
 export default adminProductService;

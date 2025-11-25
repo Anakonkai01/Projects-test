@@ -128,8 +128,21 @@ const OrderDetailPage = () => {
                         <h3 className="font-semibold mb-4 text-xl">Tóm tắt</h3>
                         <div className="space-y-2">
                             <div className="flex justify-between"><span className="text-gray-600">Tiền hàng:</span> <span>{formatPrice(order.itemsPrice)}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-600">Phí vận chuyển:</span> <span>{formatPrice(order.shippingPrice)}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-600">Thuế:</span> <span>{formatPrice(order.taxPrice)}</span></div>
+                            
+                            {order.discountPrice > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Giảm giá mã:</span> 
+                                    <span>- {formatPrice(order.discountPrice)}</span>
+                                </div>
+                            )}
+                            
+                            {order.pointsDiscountPrice > 0 && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Giảm từ điểm ({order.redeemedPoints} điểm):</span> 
+                                    <span>- {formatPrice(order.pointsDiscountPrice)}</span>
+                                </div>
+                            )}
+                            
                             <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span >Tổng cộng:</span> <span className="text-red-600">{formatPrice(order.totalPrice)}</span></div>
                         </div>
                         

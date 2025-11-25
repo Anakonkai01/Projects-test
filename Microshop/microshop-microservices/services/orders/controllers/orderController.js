@@ -32,11 +32,10 @@ exports.createOrder = async (req, res) => {
         }
 
         const itemsPrice = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        const taxPrice = 0.1 * itemsPrice;
-        const shippingPrice = itemsPrice > 2000000 ? 0 : 50000;
+        
         let couponDiscountPrice = 0;
         let pointsDiscountPrice = 0;
-        let finalTotalPrice = itemsPrice + taxPrice + shippingPrice;
+        let finalTotalPrice = itemsPrice;
 
         // === BẮT ĐẦU SỬA LỖI LOGIC DISCOUNT ===
 
@@ -77,7 +76,9 @@ exports.createOrder = async (req, res) => {
         if (finalTotalPrice < 0) finalTotalPrice = 0;
 
         const order = await Order.create({
-            orderItems, shippingInfo, paymentInfo, itemsPrice, taxPrice, shippingPrice,
+            orderItems, shippingInfo, paymentInfo, itemsPrice, 
+            taxPrice: 0, 
+            shippingPrice: 0,
             discountPrice: couponDiscountPrice,
             redeemedPoints: pointsToRedeem,
             pointsDiscountPrice,

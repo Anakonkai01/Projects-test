@@ -58,10 +58,22 @@ app.use(morgan('dev'));
 
 // Import & Mount Routers
 const productRoutes = require('./routes/productRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
 app.use('/products_ser', productRoutes);
-app.use('/categories', categoryRoutes);
 app.use('/products-stats', statsRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('❌ Error caught in middleware:');
+    console.error('Error name:', err.name);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    
+    res.status(err.status || 500).json({
+        success: false,
+        error: err.message || 'Internal Server Error',
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+});
 
 const PORT = process.env.PORT || 9002;
 app.listen(PORT, () => console.log(`📦 Product Service running on port ${PORT}`));

@@ -19,15 +19,12 @@ const ProductForm = () => {
 
     const { product: currentProduct, isLoading, isError, message } = useSelector(state => state.adminProducts);
     
-    const [categories, setCategories] = useState([]);
-
     // SỬA: Thêm 'imageIndex' vào state mặc định của variant
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         price: 0,
         brand: '',
-        category: '',
         variants: [
             { name: '', sku: '', stock: 0, price: 0, imageIndex: 0 },
             { name: '', sku: '', stock: 0, price: 0, imageIndex: 0 }
@@ -41,18 +38,7 @@ const ProductForm = () => {
 
     const isEditMode = Boolean(id);
 
-    // ... (useEffect fetchCategories giữ nguyên) ...
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const fetchedCategories = await adminProductService.getCategories();
-                setCategories(fetchedCategories);
-            } catch (error) {
-                toast.error('Không thể tải danh sách danh mục');
-            }
-        };
-        fetchCategories();
-
         if (isEditMode) {
             dispatch(getAdminProductById(id));
         }
@@ -70,7 +56,6 @@ const ProductForm = () => {
                 description: currentProduct.description || '',
                 price: currentProduct.price || 0,
                 brand: currentProduct.brand || '',
-                category: currentProduct.category?._id || currentProduct.category || '',
                 // Thêm 'imageIndex' (hoặc mặc định là 0 nếu dữ liệu cũ không có)
                 variants: currentProduct.variants.length > 0 
                     ? currentProduct.variants.map(v => ({...v, imageIndex: v.imageIndex || 0})) 
@@ -203,7 +188,7 @@ const ProductForm = () => {
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Mô tả</label>
                                 <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows="4" className="mt-1 block w-full input-style" required></textarea>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">Giá gốc</label>
                                     <input type="number" name="price" id="price" value={formData.price} onChange={handleChange} className="mt-1 block w-full input-style" required/>
@@ -211,13 +196,6 @@ const ProductForm = () => {
                                 <div>
                                     <label htmlFor="brand" className="block text-sm font-medium text-gray-700">Thương hiệu</label>
                                     <input type="text" name="brand" id="brand" value={formData.brand} onChange={handleChange} className="mt-1 block w-full input-style" required/>
-                                </div>
-                                <div>
-                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Danh mục</label>
-                                    <select name="category" id="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full input-style" required >
-                                        <option value="">-- Chọn danh mục --</option>
-                                        {categories.map(cat => (<option key={cat._id} value={cat._id}>{cat.name}</option>))}
-                                    </select>
                                 </div>
                             </div>
                         </div>
