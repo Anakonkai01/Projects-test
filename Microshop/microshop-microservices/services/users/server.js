@@ -15,16 +15,29 @@ const sendEmail = require('./utils/sendEmail');
 connectDatabase();
 const subscriber = redis.createClient({ url: process.env.REDIS_URL });
 
+// ✅ FIX: Add Redis error handling
+subscriber.on('error', (err) => {
+    console.error('❌ Redis Subscriber Error:', err);
+});
+
+subscriber.on('reconnecting', () => {
+    console.log('🔄 Redis Subscriber reconnecting...');
+});
+
+subscriber.on('ready', () => {
+    console.log('✅ Redis Subscriber ready');
+});
+
 (async () => {
     try {
         await subscriber.connect();
-        console.log('Redis subscriber connected for loyalty points.');
-        
+        console.log('✅ Redis subscriber connected for loyalty points.');
+
         await subscriber.subscribe('payment-events', async (message) => {
             try {
                 const data = JSON.parse(message);
                 console.log('💳 Received event from payment-events channel:', data.type);
-                
+
                 if (data.type === 'PAYMENT_SUCCESSFUL') {
                     const { userId, totalPrice } = data.payload;
                     const pointsEarned = Math.floor(totalPrice / 10000);
@@ -35,20 +48,34 @@ const subscriber = redis.createClient({ url: process.env.REDIS_URL });
                     }
                 }
             } catch (err) {
-                console.error('Error processing payment event:', err);
+                console.error('❌ Error processing payment event:', err);
             }
         });
     } catch (err) {
-        console.error('Failed to connect to Redis subscriber:', err);
+        console.error('❌ Failed to connect to Redis subscriber:', err);
+        console.log('⚠️  Users service will run without loyalty points event handling');
     }
 })();
 
 const emailSubscriber = redis.createClient({ url: process.env.REDIS_URL });
 
+// ✅ FIX: Add Redis error handling for email subscriber
+emailSubscriber.on('error', (err) => {
+    console.error('❌ Redis Email Subscriber Error:', err);
+});
+
+emailSubscriber.on('reconnecting', () => {
+    console.log('🔄 Redis Email Subscriber reconnecting...');
+});
+
+emailSubscriber.on('ready', () => {
+    console.log('✅ Redis Email Subscriber ready');
+});
+
 (async () => {
     try {
         await emailSubscriber.connect();
-        console.log('Redis subscriber connected for email events.');
+        console.log('✅ Redis subscriber connected for email events.');
         
         await emailSubscriber.subscribe('email-events', async (message) => {
             try {
@@ -92,11 +119,12 @@ const emailSubscriber = redis.createClient({ url: process.env.REDIS_URL });
                     console.log(`✅ Sent order confirmation email to ${user.email} for order ${order._id}`);
                 }
             } catch (err) {
-                console.error('Error processing email event:', err);
+                console.error('❌ Error processing email event:', err);
             }
         });
     } catch (err) {
-        console.error('Failed to connect to Redis email subscriber:', err);
+        console.error('❌ Failed to connect to Redis Email Subscriber:', err);
+        console.log('⚠️  Users service will run without email event handling');
     }
 })();
 

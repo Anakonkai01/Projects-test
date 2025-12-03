@@ -1,7 +1,9 @@
 // E_com/FE/src/features/orders/orderService.js
 import api from '../../utils/axios';
 
-const API_URL = '/orders/orders/';
+// ✅ FIX: Loại bỏ duplicate path segment
+// baseURL đã có /api/orders, chỉ cần thêm /
+const API_URL = '/orders/';
 
 // Tạo đơn hàng mới
 const createOrder = async (orderData) => {

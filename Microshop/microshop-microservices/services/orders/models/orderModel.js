@@ -29,6 +29,8 @@ const orderSchema = new mongoose.Schema({
     taxPrice: { type: Number, required: true, default: 0.0 },
     shippingPrice: { type: Number, required: true, default: 0.0 },
     discountPrice: { type: Number, required: true, default: 0.0 },
+    redeemedPoints: { type: Number, default: 0 }, // ✅ FIX: Số điểm đã đổi
+    pointsDiscountPrice: { type: Number, default: 0 }, // ✅ FIX: Giá trị giảm từ điểm
     totalPrice: { type: Number, required: true, default: 0.0 },
     orderStatusHistory: [{
         status: {

@@ -1,0 +1,67 @@
+services:
+  # 1. Cơ sở dữ liệu MongoDB (Dùng chung cho tất cả service để tiết kiệm resource dev)
+  mongo:
+    image: mongo:7.0
+    container_name: microshop_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - microshop_net
+
+  # 2. Redis Cache (Dùng cho queue và caching)
+  redis:
+    image: redis:alpine
+    container_name: microshop_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - microshop_net
+
+  # 3. API Gateway (Cổng vào duy nhất)
+  gateway:
+    build: ./backend/gateway
+    container_name: microshop_gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - USERS_SERVICE_URL=http://users:8001
+      - PRODUCTS_SERVICE_URL=http://products:8002
+      - ORDERS_SERVICE_URL=http://orders:8003
+    depends_on:
+      - users
+    networks:
+      - microshop_net
+
+  # 4. Users Service (Core Service)
+  users:
+    build: ./backend/services/users
+    container_name: microshop_users
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - MONGO_URI=mongodb://mongo:27017/microshop_users
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=YourSuperSecretKey123
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - microshop_net
+
+# Định nghĩa network để các container thấy nhau
+networks:
+  microshop_net:
+    driver: bridge
+
+# Định nghĩa volume để dữ liệu DB không bị mất khi tắt Docker
+volumes:
+  mongo_data:

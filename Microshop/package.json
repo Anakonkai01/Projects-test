@@ -1,0 +1,26 @@
+{
+  "name": "microshop-testing",
+  "version": "1.0.0",
+  "description": "Test suite for Microshop E-commerce Microservices",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:comprehensive && npm run test:race",
+    "test:unit": "node tests/unit-tests.js",
+    "test:comprehensive": "node tests/comprehensive-test-suite.js",
+    "test:race": "node tests/race-condition-test.js",
+    "test:setup": "node tests/setup-test-data.js",
+    "test:quick": "npm run test:unit",
+    "test:all": "npm run test:unit && npm run test:comprehensive",
+    "help": "cat tests/TEST_GUIDE.md"
+  },
+  "keywords": [
+    "microservices",
+    "e-commerce",
+    "testing",
+    "mern-stack"
+  ],
+  "author": "Claude Code",
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "^1.6.0"
+  }
+}

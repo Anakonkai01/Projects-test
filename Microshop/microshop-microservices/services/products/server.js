@@ -16,38 +16,57 @@ connectDatabase();
 // --- REDIS SUBSCRIBER CHO VIỆC TRỪ KHO ---
 const subscriber = redis.createClient({ url: process.env.REDIS_URL });
 
-(async () => {
-    await subscriber.connect();
-    console.log('Redis subscriber connected.');
+// ✅ FIX: Add Redis error handling
+subscriber.on('error', (err) => {
+    console.error('❌ Redis Subscriber Error:', err);
+});
 
-    await subscriber.subscribe('order-events', async (message) => {
+subscriber.on('reconnecting', () => {
+    console.log('🔄 Redis Subscriber reconnecting...');
+});
+
+subscriber.on('ready', () => {
+    console.log('✅ Redis Subscriber ready');
+});
+
+(async () => {
+    try {
+        await subscriber.connect();
+        console.log('✅ Redis subscriber connected.');
+
+        await subscriber.subscribe('order-events', async (message) => {
         const data = JSON.parse(message);
         console.log('📬 Received event from order-events channel:', data.type);
-        
-        if (data.type === 'ORDER_CREATED') {
+
+        // ORDER_CREATED event đã được xử lý bởi validateAndReserveStock API
+        // Giữ lại ORDER_CANCELLED để restore stock khi user hủy đơn
+        if (data.type === 'ORDER_CANCELLED') {
             const { items } = data.payload;
-            // Lặp qua các sản phẩm trong đơn hàng để trừ kho và cộng sold
+            console.log('🔄 Processing ORDER_CANCELLED - restoring stock...');
+
             for (const item of items) {
                 try {
-                    // --- BẮT ĐẦU THAY ĐỔI TỪ ĐÂY ---
                     await Product.updateOne(
-                        { "variants._id": item.variant }, // Tìm product chứa variant tương ứng
-                        { 
-                            $inc: { 
-                                "variants.$.stock": -item.quantity, // Trừ số lượng tồn kho
-                                "variants.$.sold": item.quantity,   // Tăng số lượng đã bán của biến thể
-                                "sold": item.quantity               // Tăng tổng số lượng đã bán của sản phẩm
-                            } 
+                        { "variants._id": item.variant },
+                        {
+                            $inc: {
+                                "variants.$.stock": item.quantity,   // Hoàn trả stock
+                                "variants.$.sold": -item.quantity,   // Trừ sold
+                                "sold": -item.quantity
+                            }
                         }
                     );
-                    // --- KẾT THÚC THAY ĐỔI ---
-                    console.log(`Updated stock and sales for variant ${item.variant}`);
+                    console.log(`✅ Restored ${item.quantity} units for variant ${item.variant}`);
                 } catch (err) {
-                    console.error(`Failed to update stock for variant ${item.variant}:`, err);
+                    console.error(`❌ Failed to restore stock for variant ${item.variant}:`, err);
                 }
             }
         }
     });
+    } catch (err) {
+        console.error('❌ Failed to connect Redis Subscriber:', err);
+        console.log('⚠️  Products service will run without Redis event handling');
+    }
 })();
 
 

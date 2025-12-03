@@ -2,15 +2,45 @@ const Order = require('../models/orderModel');
 const axios = require('axios');
 const { publisher } = require('../redis');
 const Discount = require('../models/discountModel');
+const { validateAndReserveInventory, rollbackInventory } = require('../utils/inventoryHelper');
 
 exports.createOrder = async (req, res) => {
-    const { orderItems, shippingInfo, paymentInfo, discountCode, pointsToRedeem = 0, guestEmail, guestName } = req.body;
-    
+    const { orderItems, shippingInfo, paymentInfo, discountCode, pointsToRedeem = 0, guestEmail, guestName, idempotencyKey } = req.body;
+
     if (!orderItems || orderItems.length === 0) {
         return res.status(400).json({ success: false, error: 'Giỏ hàng trống' });
     }
 
     try {
+        // ===== IDEMPOTENCY CHECK =====
+        // Nếu có idempotencyKey, check xem order đã tồn tại chưa
+        if (idempotencyKey) {
+            const existingOrder = await Order.findOne({
+                'paymentInfo.id': idempotencyKey
+            });
+
+            if (existingOrder) {
+                console.log(`⚠️  Duplicate order request detected with idempotencyKey: ${idempotencyKey}`);
+                return res.status(200).json({
+                    success: true,
+                    data: existingOrder,
+                    message: 'Đơn hàng đã tồn tại'
+                });
+            }
+        }
+        // ===== END IDEMPOTENCY CHECK =====
+
+        // ===== BƯỚC 1: VALIDATE VÀ RESERVE INVENTORY TRƯỚC =====
+        const inventoryValidation = await validateAndReserveInventory(orderItems);
+
+        if (!inventoryValidation.success) {
+            return res.status(400).json({
+                success: false,
+                error: inventoryValidation.error
+            });
+        }
+        // ===== KẾT THÚC BƯỚC 1 =====
+
         let userId;
 
         // Logic xác định userId (giữ nguyên)
@@ -20,14 +50,18 @@ exports.createOrder = async (req, res) => {
             try {
                 const { data } = await axios.post(`${process.env.USERS_URL}/internal/find-or-create-user`, {
                     email: guestEmail,
-                    name: guestName || 'Khách hàng' 
+                    name: guestName || 'Khách hàng'
                 });
                 userId = data.userId;
             } catch (err) {
                 console.error("Lỗi khi tìm hoặc tạo guest user:", err.response?.data || err.message);
+                // Rollback inventory nếu user creation thất bại
+                await rollbackInventory(orderItems);
                 return res.status(500).json({ success: false, error: 'Không thể xử lý thông tin khách hàng.' });
             }
         } else {
+            // Rollback inventory nếu không có user info
+            await rollbackInventory(orderItems);
             return res.status(400).json({ success: false, error: 'Yêu cầu thiếu thông tin người dùng.' });
         }
 
@@ -45,12 +79,14 @@ exports.createOrder = async (req, res) => {
             validDiscount = await Discount.findOne({ code: discountCode }); // 2. Tìm 1 LẦN DUY NHẤT
 
             if (validDiscount && validDiscount.timesUsed < validDiscount.usageLimit) {
-                couponDiscountPrice = validDiscount.discountType === 'percentage' 
-                    ? (itemsPrice * validDiscount.value) / 100 
+                couponDiscountPrice = validDiscount.discountType === 'percentage'
+                    ? (itemsPrice * validDiscount.value) / 100
                     : validDiscount.value;
-                
+
                 // 3. KHÔNG CỘNG 'timesUsed' ở đây
             } else {
+                // Rollback inventory nếu discount invalid
+                await rollbackInventory(orderItems);
                 return res.status(400).json({ success: false, error: 'Mã giảm giá không hợp lệ hoặc đã hết lượt' });
             }
         }
@@ -62,11 +98,15 @@ exports.createOrder = async (req, res) => {
         if (pointsToRedeem > 0) {
             try {
                 if (!req.user) {
+                    // Rollback inventory
+                    await rollbackInventory(orderItems);
                     return res.status(400).json({ success: false, error: 'Chỉ có thành viên mới được sử dụng điểm thưởng.' });
                 }
                 await axios.post(`${process.env.USERS_URL}/internal/update-points`, { userId: userId, points: -pointsToRedeem });
                 pointsDiscountPrice = pointsToRedeem * 1000;
             } catch (err) {
+                // Rollback inventory nếu points deduction thất bại
+                await rollbackInventory(orderItems);
                 const errorMessage = err.response?.data?.error || 'Không đủ điểm hoặc lỗi khi đổi điểm.';
                 return res.status(400).json({ success: false, error: errorMessage });
             }
@@ -75,18 +115,35 @@ exports.createOrder = async (req, res) => {
         finalTotalPrice = finalTotalPrice - couponDiscountPrice - pointsDiscountPrice;
         if (finalTotalPrice < 0) finalTotalPrice = 0;
 
-        const order = await Order.create({
-            orderItems, shippingInfo, paymentInfo, itemsPrice, 
-            taxPrice: 0, 
-            shippingPrice: 0,
-            discountPrice: couponDiscountPrice,
-            redeemedPoints: pointsToRedeem,
-            pointsDiscountPrice,
-            totalPrice: finalTotalPrice,
-            user: userId,
-            orderStatusHistory: [{ status: 'Pending' }]
-        });
-        
+        // Tạo order trong try-catch riêng để rollback nếu thất bại
+        let order;
+        try {
+            order = await Order.create({
+                orderItems, shippingInfo, paymentInfo, itemsPrice,
+                taxPrice: 0,
+                shippingPrice: 0,
+                discountPrice: couponDiscountPrice,
+                redeemedPoints: pointsToRedeem,
+                pointsDiscountPrice,
+                totalPrice: finalTotalPrice,
+                user: userId,
+                orderStatusHistory: [{ status: 'Pending' }]
+            });
+        } catch (createError) {
+            // Rollback inventory nếu order creation thất bại
+            await rollbackInventory(orderItems);
+            // Rollback points nếu đã deduct
+            if (pointsToRedeem > 0 && userId) {
+                try {
+                    await axios.post(`${process.env.USERS_URL}/internal/update-points`, { userId: userId, points: pointsToRedeem });
+                } catch (rollbackErr) {
+                    console.error('❌ CRITICAL: Failed to rollback points:', rollbackErr.message);
+                }
+            }
+            console.error("Lỗi khi tạo order:", createError);
+            return res.status(500).json({ success: false, error: 'Không thể tạo đơn hàng' });
+        }
+
         // === SỬA LỖI: Cập nhật và lưu discount sau khi đã tạo order
         if (validDiscount) { // 4. Kiểm tra đối tượng 'validDiscount'
             validDiscount.timesUsed += 1; // 5. Cập nhật 'timesUsed'
@@ -94,18 +151,15 @@ exports.createOrder = async (req, res) => {
             await validDiscount.save(); // 7. LƯU LẠI
         }
 
-        // Phát sự kiện trừ kho (giữ nguyên)
-        if (publisher.isReady) {
-            const eventPayload = {
-                type: 'ORDER_CREATED',
-                payload: { items: order.orderItems },
-            };
-            await publisher.publish('order-events', JSON.stringify(eventPayload));
-        }
+        // KHÔNG CẦN phát sự kiện ORDER_CREATED nữa vì đã reserve inventory trước đó
+        // Inventory đã được trừ trong validateAndReserveInventory
+        // Chỉ cần confirm reservation (có thể thêm sau nếu cần)
 
         res.status(201).json({ success: true, data: order });
     } catch (error) {
         console.error("Lỗi tại createOrder:", error);
+        // Rollback inventory nếu có lỗi chưa được handle
+        await rollbackInventory(orderItems);
         res.status(500).json({ success: false, error: 'Lỗi Server' });
     }
 };

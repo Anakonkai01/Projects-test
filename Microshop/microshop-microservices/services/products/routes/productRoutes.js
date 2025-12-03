@@ -7,11 +7,16 @@ const {
     deleteProduct,
     getAllBrands
 } = require('../controllers/productController');
+const { validateAndReserveStock, rollbackStock } = require('../controllers/inventoryController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
+
+// Inventory management routes (phải đặt trước các route khác)
+router.post('/validate-stock', validateAndReserveStock);
+router.post('/rollback-stock', rollbackStock);
 
 // Route để lấy danh sách brands - phải đặt trước route /:id
 router.get('/brands/all', getAllBrands);
