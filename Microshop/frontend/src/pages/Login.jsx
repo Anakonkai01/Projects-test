@@ -192,7 +192,7 @@ const Login = () => {
 
           <div>
             <a
-              href="http://localhost:8000/api/users/auth/google"
+              href="http://localhost:8000/api/auth/google"
               className="w-full inline-flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 border border-gray-300 rounded-lg shadow-sm transition-colors duration-200"
             >
               <GoogleIcon />

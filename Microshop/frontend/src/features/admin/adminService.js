@@ -1,5 +1,5 @@
 import api from '../../utils/axios';
-const API_URL = '/users/users'; 
+const API_URL = '/users'; 
 
 const getUsers = async (queryParams = '') => {
     const response = await api.get(`${API_URL}${queryParams}`);

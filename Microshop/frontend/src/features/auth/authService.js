@@ -1,7 +1,7 @@
 // Nhan/frontend/src/features/auth/authService.js
 import api from "../../utils/axios";
 
-const API_URL = '/users/auth/'
+const API_URL = '/auth/'
 
 const register = async (userData) => {
     const response = await api.post(API_URL + 'register', userData);

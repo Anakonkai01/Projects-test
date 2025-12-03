@@ -64,56 +64,63 @@ const productsStatsProxy = createProxyMiddleware({
 
 // Auth Proxy
 const authProxy = createProxyMiddleware({
-    target: USERS_TARGET,
+    target: `${USERS_TARGET}/auth`,
+    changeOrigin: true
+});
+
+// Users Auth Proxy (legacy path support: /api/users/auth/* -> /auth/*)
+const usersAuthProxy = createProxyMiddleware({
+    target: `${USERS_TARGET}/auth`,
     changeOrigin: true,
-    pathRewrite: { '^/api/auth': '/auth' }
+    pathRewrite: {
+        '^/api/users/auth': '/auth'
+    },
+    on: {
+        proxyReq: (proxyReq, req, res) => {
+            console.log(`[Users-Auth-Legacy] ${req.method} ${req.originalUrl} -> ${USERS_TARGET}/auth${req.url.replace('/api/users/auth', '')}`);
+        }
+    }
 });
 
 // Users Proxy
 const usersProxy = createProxyMiddleware({
-    target: USERS_TARGET,
-    changeOrigin: true,
-    pathRewrite: { '^/api/users': '/users' }
+    target: `${USERS_TARGET}/users`,
+    changeOrigin: true
 });
 
-// Products Proxy
+// Products Proxy - target includes base path since Express strips mount point
 const productsProxy = createProxyMiddleware({
-    target: PRODUCTS_TARGET,
+    target: `${PRODUCTS_TARGET}/products_ser`,
     changeOrigin: true,
-    pathRewrite: { '^/api/products': '/products_ser' },
     on: {
         proxyReq: (proxyReq, req, res) => {
-            console.log(`[Products] ${req.method} ${req.originalUrl} -> ${PRODUCTS_TARGET}${proxyReq.path}`);
+            console.log(`[Products] ${req.method} ${req.originalUrl} -> ${PRODUCTS_TARGET}/products_ser${req.url}`);
         }
     }
 });
 
 // Orders Proxy
 const ordersProxy = createProxyMiddleware({
-    target: ORDERS_TARGET,
-    changeOrigin: true,
-    pathRewrite: { '^/api/orders': '/orders' }
+    target: `${ORDERS_TARGET}/orders`,
+    changeOrigin: true
 });
 
 // Discounts Proxy
 const discountsProxy = createProxyMiddleware({
-    target: ORDERS_TARGET,
-    changeOrigin: true,
-    pathRewrite: { '^/api/discounts': '/discounts' }
+    target: `${ORDERS_TARGET}/discounts`,
+    changeOrigin: true
 });
 
 // Payments Proxy
 const paymentsProxy = createProxyMiddleware({
-    target: ORDERS_TARGET,
-    changeOrigin: true,
-    pathRewrite: { '^/api/payments': '/payments' }
+    target: `${ORDERS_TARGET}/payments`,
+    changeOrigin: true
 });
 
 // Internal Proxy
 const internalProxy = createProxyMiddleware({
-    target: USERS_TARGET,
-    changeOrigin: true,
-    pathRewrite: { '^/api/internal': '/internal' }
+    target: `${USERS_TARGET}/internal`,
+    changeOrigin: true
 });
 
 // --- MOUNT ROUTES (Thứ tự quan trọng - specific routes trước) ---
@@ -124,6 +131,7 @@ app.use('/api/orders-stats', ordersStatsProxy);
 app.use('/api/products-stats', productsStatsProxy);
 
 // Main routes
+app.use('/api/users/auth', usersAuthProxy);  // Legacy path support - MUST be before /api/users
 app.use('/api/auth', authProxy);
 app.use('/api/users', usersProxy);
 app.use('/api/products', productsProxy);

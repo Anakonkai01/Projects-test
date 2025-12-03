@@ -7,9 +7,18 @@ exports.getSummary = async (req, res) => {
     try {
         const totalOrders = await Order.countDocuments();
 
+        // Chỉ tính doanh thu từ các đơn hàng đã giao (Delivered)
         const revenueStats = await Order.aggregate([
             {
-                $match: { 'paymentInfo.status': 'succeeded' } // Chỉ tính các đơn đã thanh toán thành công
+                // Lọc đơn hàng có status cuối cùng là 'Delivered'
+                $match: {
+                    $expr: {
+                        $eq: [
+                            { $arrayElemAt: ["$orderStatusHistory.status", -1] },
+                            "Delivered"
+                        ]
+                    }
+                }
             },
             {
                 $group: {
@@ -29,6 +38,7 @@ exports.getSummary = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error("Error getting summary stats:", error);
         res.status(500).json({ success: false, error: 'Server Error' });
     }
 };
@@ -54,16 +64,21 @@ exports.getSalesStats = async (req, res) => {
 
         const salesData = await Order.aggregate([
             {
-                // 1. Lọc các đơn hàng đã thanh toán thành công trong khoảng thời gian
+                // 1. Lọc các đơn hàng đã giao (Delivered) trong khoảng thời gian
                 $match: {
-                    paidAt: { $gte: start, $lte: end },
-                    'paymentInfo.status': 'succeeded'
+                    deliveredAt: { $gte: start, $lte: end },
+                    $expr: {
+                        $eq: [
+                            { $arrayElemAt: ["$orderStatusHistory.status", -1] },
+                            "Delivered"
+                        ]
+                    }
                 }
             },
             {
                 // 2. Nhóm các đơn hàng lại theo định dạng thời gian (năm, tháng, tuần, ngày)
                 $group: {
-                    _id: { $dateToString: { format: groupFormat, date: "$paidAt" } },
+                    _id: { $dateToString: { format: groupFormat, date: "$deliveredAt" } },
                     totalRevenue: { $sum: '$totalPrice' }, // Tổng doanh thu
                     totalItemsPrice: { $sum: '$itemsPrice' }, // Tổng tiền hàng (trước thuế, ship)
                     totalOrders: { $sum: 1 } // Đếm số lượng đơn hàng

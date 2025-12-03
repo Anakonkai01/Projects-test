@@ -1,7 +1,7 @@
 // Nhan/frontend/src/features/cart/cartService.js
 import api from '../../utils/axios';
 
-const API_URL = '/users/auth/cart';
+const API_URL = '/auth/cart';
 
 const fetchCart = async () => {
     const response = await api.get(API_URL);
