@@ -28,8 +28,14 @@ export const fetchDashboardStats = createAsyncThunk('dashboard/fetchStats', asyn
             dashboardService.getProductStats(),
         ]);
 
+        console.log('📊 Dashboard Stats Received:');
+        console.log('User Stats:', userStats);
+        console.log('Order Stats:', orderStats);
+        console.log('Product Stats:', productStats);
+
         return { ...userStats, ...orderStats, ...productStats };
     } catch (error) {
+        console.error('❌ Error fetching dashboard stats:', error);
         const message = error.response?.data?.error || 'Không thể tải dữ liệu dashboard.';
         return thunkAPI.rejectWithValue(message);
     }

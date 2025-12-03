@@ -3,23 +3,23 @@ import api from '../../utils/axios';
 
 // Lấy thống kê từ users-service
 const getUserStats = async () => {
-    const response = await api.get('/users/users-stats/summary');
+    const response = await api.get('/users-stats/summary');
     return response.data.data;
 };
 
 // Lấy thống kê từ orders-service
 const getOrderStats = async () => {
-    const response = await api.get('/orders/orders-stats/summary');
+    const response = await api.get('/orders-stats/summary');
     return response.data.data;
 };
 
 // Lấy thống kê từ products-service
 const getProductStats = async () => {
-    const response = await api.get('/products/products-stats/summary');
+    const response = await api.get('/products-stats/summary');
     return response.data.data;
 };
 const getSalesStats = async (params) => {
-    const response = await api.get('/orders/orders-stats/sales', { params }); // Gửi params qua query string
+    const response = await api.get('/orders-stats/sales', { params }); // Gửi params qua query string
     return response.data.data;
 };
 const dashboardService = {

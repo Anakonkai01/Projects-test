@@ -20,19 +20,22 @@ const StatCard = ({ icon, title, value, color }) => (
 
 const AdminDashboard = () => {
     const dispatch = useDispatch();
-    const { stats, isLoading } = useSelector((state) => state.dashboard);
+    const { stats, isLoading, isError, message } = useSelector((state) => state.dashboard);
 
     useEffect(() => {
         dispatch(fetchDashboardStats());
     }, [dispatch]);
 
-    const formatCurrency = (number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number);
+    const formatCurrency = (number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number || 0);
+
+    // Đảm bảo bestSellers luôn là array
+    const bestSellers = Array.isArray(stats.bestSellers) ? stats.bestSellers : [];
 
     const bestSellersData = {
-        labels: stats.bestSellers.map(p => p.name),
+        labels: bestSellers.map(p => p.name),
         datasets: [{
             label: 'Số lượng đã bán',
-            data: stats.bestSellers.map(p => p.sold),
+            data: bestSellers.map(p => p.sold),
             backgroundColor: 'rgba(54, 162, 235, 0.6)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
@@ -41,6 +44,23 @@ const AdminDashboard = () => {
 
     if (isLoading) {
         return <div className="p-6">Đang tải dữ liệu...</div>;
+    }
+
+    if (isError) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                    <p className="font-semibold">Lỗi tải dữ liệu</p>
+                    <p className="text-sm">{message}</p>
+                    <button 
+                        onClick={() => dispatch(fetchDashboardStats())}
+                        className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                    >
+                        Thử lại
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -58,16 +78,23 @@ const AdminDashboard = () => {
             {/* Biểu đồ */}
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Top 5 sản phẩm bán chạy nhất</h2>
-                <Bar 
-                    data={bestSellersData}
-                    options={{
-                        responsive: true,
-                        plugins: {
-                            legend: { position: 'top' },
-                            title: { display: true, text: 'Số lượng sản phẩm đã bán' },
-                        },
-                    }}
-                />
+                {bestSellers.length > 0 ? (
+                    <Bar 
+                        data={bestSellersData}
+                        options={{
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top' },
+                                title: { display: true, text: 'Số lượng sản phẩm đã bán' },
+                            },
+                        }}
+                    />
+                ) : (
+                    <div className="text-center py-8 text-gray-500">
+                        <p>Chưa có dữ liệu sản phẩm bán chạy</p>
+                        <p className="text-sm mt-2">Thêm sản phẩm và đơn hàng để xem thống kê</p>
+                    </div>
+                )}
             </div>
             <AdvancedDashboard />
         </div>

@@ -50,26 +50,29 @@ const AdvancedDashboard = () => {
         dispatch(fetchSalesStats({ ...newDates, groupBy }));
     };
 
+    // Đảm bảo salesData luôn là array
+    const validSalesData = Array.isArray(salesData) ? salesData : [];
+
     const chartData = {
-        labels: salesData.map(d => d._id),
+        labels: validSalesData.map(d => d._id),
         datasets: [
             {
                 label: 'Doanh thu (VND)',
-                data: salesData.map(d => d.totalRevenue),
+                data: validSalesData.map(d => d.totalRevenue || 0),
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 yAxisID: 'y',
             },
             {
                 label: 'Lợi nhuận (VND)', // <-- BỘ DỮ LIỆU MỚI
-                data: salesData.map(d => d.totalProfit),
+                data: validSalesData.map(d => d.totalProfit || 0),
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.5)',
                 yAxisID: 'y',
             },
             {
                 label: 'Số đơn hàng',
-                data: salesData.map(d => d.totalOrders),
+                data: validSalesData.map(d => d.totalOrders || 0),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 yAxisID: 'y1', // Sử dụng trục tung thứ hai
@@ -111,7 +114,16 @@ const AdvancedDashboard = () => {
             </div>
 
             {/* Biểu đồ */}
-            {isLoadingSales ? <p>Đang tải biểu đồ...</p> : <Line options={chartOptions} data={chartData} />}
+            {isLoadingSales ? (
+                <p>Đang tải biểu đồ...</p>
+            ) : validSalesData.length > 0 ? (
+                <Line options={chartOptions} data={chartData} />
+            ) : (
+                <div className="text-center py-8 text-gray-500">
+                    <p>Chưa có dữ liệu bán hàng trong khoảng thời gian này</p>
+                    <p className="text-sm mt-2">Tạo đơn hàng để xem biểu đồ phân tích</p>
+                </div>
+            )}
         </div>
     );
 };

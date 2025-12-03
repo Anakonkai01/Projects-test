@@ -55,17 +55,14 @@ const ProductCard = ({ product }) => {
   const handleBuyNow = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (!defaultVariant) {
       toast.error("Sản phẩm không có phiên bản khả dụng!");
       return;
     }
-
     if (defaultVariant.stock <= 0) {
       toast.error("Sản phẩm đã hết hàng!");
       return;
     }
-
     const itemToAdd = {
       _id: product._id,
       name: product.name,
@@ -74,14 +71,8 @@ const ProductCard = ({ product }) => {
       variant: defaultVariant,
       quantity: 1
     };
-
-    // Thêm vào giỏ hàng trước
-    dispatch(addToCart(itemToAdd));
-    
-    // Chuyển đến trang checkout
-    setTimeout(() => {
-      navigate('/checkout');
-    }, 500);
+    // Chuyển đến trang checkout, chỉ truyền sản phẩm vừa chọn
+    navigate('/checkout', { state: { item: itemToAdd } });
   };
 
   return (

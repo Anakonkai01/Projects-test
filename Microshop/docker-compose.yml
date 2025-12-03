@@ -4,9 +4,7 @@ services:
   gateway:
     build: ./microshop-microservices/gateway
     env_file:
-      # Sử dụng .env ở thư mục gốc nếu có biến chung,
-      # hoặc .env riêng của gateway nếu cần
-      - ./microshop-microservices/.env
+      - ./.env
     ports:
       - "${GATEWAY_PORT:-8000}:8000"
     depends_on:
@@ -24,7 +22,7 @@ services:
   users:
     build: ./microshop-microservices/services/users
     env_file:
-      - ./microshop-microservices/services/users/.env # Đường dẫn tương đối
+      - ./.env
     # Bỏ environment nếu các biến đã có đủ trong env_file
     # environment:
     #   PORT: ${USERS_PORT:-8001}
@@ -39,7 +37,7 @@ services:
   products:
     build: ./microshop-microservices/services/products
     env_file:
-      - ./microshop-microservices/services/products/.env # Đường dẫn tương đối
+      - ./.env
     # environment:
     #   PORT: ${PRODUCTS_PORT:-8002}
     volumes:
@@ -53,7 +51,7 @@ services:
   orders:
     build: ./microshop-microservices/services/orders
     env_file:
-      - ./microshop-microservices/services/orders/.env # Đường dẫn tương đối
+      - ./.env
     environment: # Giữ lại các URL nội bộ vì chúng phụ thuộc tên service
       PORT: ${ORDERS_PORT:-8003}
       PRODUCTS_URL: http://products:${PRODUCTS_PORT:-8002}

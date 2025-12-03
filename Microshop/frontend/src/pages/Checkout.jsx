@@ -55,7 +55,6 @@ const Checkout = () => {
   });
   const [discountCodeInput, setDiscountCodeInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
-  const [pointsToRedeem, setPointsToRedeem] = useState("");
 
   // ... (useEffect cho getMe, VNPay, isError giữ nguyên) ...
   useEffect(() => {
@@ -110,14 +109,8 @@ const Checkout = () => {
   }, [appliedDiscount, itemsTotalAmount]);
 
   // GIẢM TỪ ĐIỂM (dùng itemsTotalAmount mới)
-  const pointsDiscountAmount = useMemo(() => {
-    const pointsValue = Number(pointsToRedeem) * 1000;
-    const maxRedeemableValue = itemsTotalAmount - discountAmount;
-    return Math.min(pointsValue, maxRedeemableValue);
-  }, [pointsToRedeem, itemsTotalAmount, discountAmount]);
-
   // TỔNG CUỐI CÙNG (dùng itemsTotalAmount mới)
-  const finalTotal = itemsTotalAmount - discountAmount - pointsDiscountAmount;
+  const finalTotal = itemsTotalAmount - discountAmount;
   // === KẾT THÚC SỬA LOGIC TÍNH TOÁN ===
 
   const handleApplyDiscount = () => {
@@ -191,9 +184,7 @@ const Checkout = () => {
       taxPrice: 0,
       shippingPrice: 0,
       discountPrice: discountAmount,
-      pointsToRedeem:
-        Number(pointsToRedeem) > 0 ? Number(pointsToRedeem) : undefined,
-      pointsDiscountPrice: pointsDiscountAmount,
+      // ...loại bỏ điểm thưởng...
       totalPrice: finalTotal,
       discountCode: appliedDiscount ? appliedDiscount.code : undefined,
       guestEmail: user ? undefined : guestEmail,
@@ -236,7 +227,7 @@ const Checkout = () => {
   };
 
   const isLoading = isOrderLoading || isPaymentLoading;
-  const userPoints = user?.loyaltyPoints || 0;
+  // ...loại bỏ điểm thưởng...
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -446,32 +437,7 @@ const Checkout = () => {
             </div>
           </div>
 
-          <div className="border-t pt-4 mb-4">
-            <p className="font-semibold mb-2">Sử dụng điểm thưởng</p>
-            <p className="text-sm text-gray-500 mb-2">
-              Bạn đang có:{" "}
-              <span className="font-bold text-green-600">
-                {userPoints} điểm
-              </span>
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                value={pointsToRedeem}
-                onChange={(e) => {
-                  const value =
-                    e.target.value === "" ? "" : Number(e.target.value);
-                  if (value >= 0) {
-                    setPointsToRedeem(Math.min(value, userPoints));
-                  }
-                }}
-                placeholder="Nhập số điểm"
-                className="p-2 border rounded w-full"
-                max={userPoints}
-                min="0"
-              />
-            </div>
-          </div>
+          {/* ...loại bỏ UI điểm thưởng... */}
 
           {/* SỬA: Dùng các biến tính toán mới */}
           <div className="border-t pt-4 space-y-2">
@@ -489,16 +455,7 @@ const Checkout = () => {
                 </span>
               </div>
             )}
-            {pointsDiscountAmount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>Giảm từ điểm thưởng:</span>
-                <span>
-                  -{" "}
-                  {new Intl.NumberFormat("vi-VN").format(pointsDiscountAmount)}{" "}
-                  đ
-                </span>
-              </div>
-            )}
+            {/* ...loại bỏ hiển thị giảm từ điểm thưởng... */}
             <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
               <span>Tổng cộng:</span>
               <span className="text-red-600">

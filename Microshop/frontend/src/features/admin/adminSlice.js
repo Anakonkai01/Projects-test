@@ -60,8 +60,9 @@ export const adminSlice = createSlice({
         .addCase(getUsers.fulfilled, (state, action) => {
             state.isLoading = false;
             state.isSuccess = true;
-            state.users = action.payload.data; // Lấy mảng users từ data
-            state.pagination = action.payload.pagination; // Lấy thông tin phân trang
+            // Đảm bảo users luôn là array
+            state.users = Array.isArray(action.payload.data) ? action.payload.data : [];
+            state.pagination = action.payload.pagination || {}; // Lấy thông tin phân trang
         })
         .addCase(getUsers.rejected, (state, action) => {
             state.isLoading = false;

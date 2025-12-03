@@ -58,13 +58,9 @@ const Profile = () => {
                 {/* Cột trái: Menu */}
                 <aside className="w-full md:w-1/4 bg-white p-6 rounded-lg shadow-md h-fit">
                     <div className="text-center mb-6">
-                        <h2 className="text-xl font-bold">{user.name}</h2>
-                        <p className="text-gray-500 text-sm">{user.email}</p>
-                        
-                        {/* === PHẦN ĐÃ HOÀN THIỆN === */}
-                        <div className="mt-4 bg-green-100 text-green-800 text-sm font-semibold px-3 py-1.5 rounded-full inline-block">
-                           Điểm thưởng: {user.loyaltyPoints || 0}
-                        </div>
+                                <h2 className="text-xl font-bold">{user.name}</h2>
+                                <p className="text-gray-500 text-sm">{user.email}</p>
+                                {/* ...loại bỏ hiển thị điểm thưởng... */}
                     </div>
                     <nav className="flex flex-col space-y-2">
                         <TabButton tabName="settings" label="Cài đặt tài khoản" />
